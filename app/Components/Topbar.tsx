@@ -43,7 +43,7 @@ export default function Topbar(props: any) {
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex items-center justify-between lg:py-[23px] p-4 border-b border-[#416455]"
+      className="flex items-center justify-between lg:py-[23px] lg:px-[30px] p-4 border-b border-[#416455]"
     >
       <h1 className="text-xl lg:text-[28px] lg:leading-[38px] font-semibold text-white">
         {props.pageTitle}

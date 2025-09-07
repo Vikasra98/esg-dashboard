@@ -1,6 +1,7 @@
 import React from "react";
 import AuthLayout from "../Layout/AuthLayout";
 import CompanyProfile from "../Components/CompanyProfile";
+import DataInputFlowForm from "../Components/DataInputFlowForm";
 
 const page = () => {
   return (

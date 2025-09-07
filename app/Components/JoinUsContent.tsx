@@ -53,7 +53,7 @@ const JoinUsContent = () => {
   return (
     <>
       <div
-        className="bg-[#F5F5F3] px-[26px] py-[50px] rounded-[10px] h-full"
+        className="bg-[#F5F5F3] px-[26px] py-[30px] rounded-[10px]"
         style={{ boxShadow: "0px 4px 20px 0px #00000012" }}
       >
         <div className="w-full flex items-center flex-col">
