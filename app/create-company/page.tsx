@@ -3,7 +3,6 @@ import AuthLayout from "../Layout/AuthLayout";
 import CompanyProfile from "../Components/CompanyProfile";
 import DataInputFlowForm from "../Components/DataInputFlowForm";
 import VerificationCompleted from "../Components/VerificationCompleted";
-import CompanyDashboard from "../Components/CompanyDashboard";
 
 const page = () => {
   return (
