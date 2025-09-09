@@ -123,7 +123,7 @@ export default function RecentVerification() {
                     type="checkbox"
                     checked={selected.includes(c.order)}
                     onChange={() => toggleSelect(c.order)}
-                    className="w-4 h-4 accent-orange-500 rounded border-gray-600 bg-transparent"
+                    className="w-4 h-4 accent-orange-500 rounded text-white border-white bg-transparent"
                   />
                   <span>{c.order}</span>
                 </td>
