@@ -76,6 +76,7 @@ export default function login() {
               </a>
             </div>
             <button
+              type="button"
               onClick={() => router.push("/dashboard")}
               className="cursor-pointer w-full rounded-md bg-[#12291E] text-2xl lg:font-semibold leading-[34px] px-6 lg:py-5 py-3 font-medium text-white hover:bg-[#0d291c] transition mb-3.5"
             >
