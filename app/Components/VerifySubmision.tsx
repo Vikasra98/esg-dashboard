@@ -1,11 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import VerificationCompleted from "./VerificationCompleted";
+import { submitFieldId } from "../helper/api";
 
 const VerifySubmision = () => {
   const [isVerify, setIsVerify] = useState(false);
+  const [fieldData, setFieldData] = useState<any>();
+  console.log(fieldData);
+
+  useEffect(() => {
+    if (typeof window != undefined) {
+      const idField = localStorage.getItem("fieldId");
+      setFieldData(idField);
+    }
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      const field = localStorage.getItem("fieldId") || "COM-DEFAULT";
+      const payload: any = {
+        field_id: "FSUB-1234-5678",
+      };
+
+      console.log("Submitting payload:", payload);
+      await submitFieldId(payload);
+
+      setIsVerify(true);
+    } catch (err) {
+      console.error("Failed to submit:", err);
+      alert("Failed to submit data. Check console for details.");
+    }
+  };
   return (
     <>
       {!isVerify ? (
@@ -31,7 +58,7 @@ const VerifySubmision = () => {
                 <button
                   type="button"
                   className="w-full lg:w-[521px] bg-[#12291E] text-[#F5F5F3] py-[18px] px-[30px] rounded-md hover:bg-green-800 transition text-2xl font-[600] cursor-pointer"
-                  onClick={() => setIsVerify(true)}
+                  onClick={handleSave}
                 >
                   Submit for Verification
                 </button>

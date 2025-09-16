@@ -13,13 +13,33 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authApi } from "../helper/api";
 
 export default function Topbar(props: any) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [userInfo, setUserInfo] = useState<any>({});
+  const router = useRouter();
+  console.log(userInfo.role, "userInfo.role");
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = () => {
+    authApi.logout();
+    setShowProfile(false);
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    if (typeof window != undefined) {
+      const stored = localStorage.getItem("userInfo");
+      if (stored) {
+        setUserInfo(JSON.parse(stored));
+      }
+    }
+  }, []);
 
   // close dropdown when clicking outside
   useEffect(() => {
@@ -148,16 +168,18 @@ export default function Topbar(props: any) {
           >
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <Image
-                src="/img/top-profile.jpg"
+                // src="/img/top-profile.jpg"
+                src="/img/dummy-profile.png"
                 alt="profile"
                 height={38}
                 width={38}
               />
             </div>
             <div className="text-sm text-left">
-              <p className="font-medium text-white">Alex Meian</p>
-              <p className="text-gray-400">Product Manager</p>
+              <p className="font-medium text-white">{userInfo?.full_name}</p>
+              <p className="text-gray-400">{userInfo?.role}</p>
             </div>
+            <span></span>
           </button>
 
           <AnimatePresence>
@@ -182,7 +204,10 @@ export default function Topbar(props: any) {
                   <li className="px-4 py-2 hover:bg-[#123D2A] flex items-center gap-2 cursor-pointer">
                     <HelpCircle size={16} /> Support & Info
                   </li>
-                  <li className="px-4 py-2 hover:bg-[#123D2A] flex items-center gap-2 cursor-pointer text-red-400">
+                  <li
+                    onClick={handleLogout}
+                    className="px-4 py-2 hover:bg-[#123D2A] flex items-center gap-2 cursor-pointer text-red-400"
+                  >
                     <LogOut size={16} /> Logout
                   </li>
                 </ul>

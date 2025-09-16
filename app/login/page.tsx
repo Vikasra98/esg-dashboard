@@ -1,10 +1,54 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { FcGoogle } from "react-icons/fc";
+import { authApi } from "../helper/api";
+import { loginSchema } from "../helper/validationSchema";
+import { LoginRequest } from "../types/api";
 
 export default function login() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(loginSchema),
+    mode: "onBlur",
+  });
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (authApi.isAuthenticated()) {
+      router.push("/dashboard");
+    }
+  }, [router]);
+
+  const onSubmit = async (data: LoginRequest) => {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const response: any = await authApi.login(data);
+      console.log("Login successful:", response.user_id);
+      localStorage.setItem("user", response.user_id);
+      localStorage.setItem("userInfo", JSON.stringify(response.user));
+      // Redirect to dashboard after successful login
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      setErrorMessage(error.message || "An error occurred during login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     // <main className="flex min-h-screen items-center justify-center bg-[#081A12] lg:px-[135px] lg:py-20">
     <div className="grid w-full  grid-cols-1 overflow-hidden shadow-lg md:grid-cols-2 min-h-screen">
@@ -57,30 +101,63 @@ export default function login() {
           </div>
 
           {/* Form */}
-          <form className="w-full">
-            <input
-              maxLength={80}
-              type="email"
-              placeholder="Email Address (required)"
-              className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] "border-0 bg-white border-white mb-[26px]`}
-            />
-            <input
-              type="password"
-              placeholder="Password (required)"
-              className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] "border-0 bg-white border-white mb-3`}
-            />
+          <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+            <div className="mb-[26px]">
+              <input
+                {...register("email")}
+                maxLength={120}
+                type="email"
+                placeholder="Email Address (required)"
+                className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] ${
+                  errors.email
+                    ? "border-[#FF6969] bg-[#FFF6F6]"
+                    : "border-0 bg-white border-white"
+                }`}
+              />
+              {errors.email && (
+                <p className="text-[#FF1F23] text-sm font-normal mt-1.5">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-3">
+              <input
+                {...register("password")}
+                type="password"
+                placeholder="Password (required)"
+                className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] ${
+                  errors.password
+                    ? "border-[#FF6969] bg-[#FFF6F6]"
+                    : "border-0 bg-white border-white"
+                }`}
+              />
+              {errors.password && (
+                <p className="text-[#FF1F23] text-sm font-normal mt-1.5">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
             <div className="text-left lg:mb-[40px] mb-6">
-              <a href="#" className="lg:text-lg text-sm  text-[#1C1C1E]">
+              <a href="#" className="lg:text-lg text-sm text-[#1C1C1E]">
                 Forgot Your{" "}
                 <span className="text-[#D99A70] underline">Password?</span>
               </a>
             </div>
+
+            {errorMessage && (
+              <p className="text-[#FF1F23] text-sm font-normal mb-4 text-center">
+                {errorMessage}
+              </p>
+            )}
+
             <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              className="cursor-pointer w-full rounded-md bg-[#12291E] text-2xl lg:font-semibold leading-[34px] px-6 lg:py-5 py-3 font-medium text-white hover:bg-[#0d291c] transition mb-3.5"
+              type="submit"
+              disabled={isLoading}
+              className="cursor-pointer w-full rounded-md bg-[#12291E] text-2xl lg:font-semibold leading-[34px] px-6 lg:py-5 py-3 font-medium text-white hover:bg-[#0d291c] transition mb-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Continue
+              {isLoading ? "Logging in..." : "Continue"}
             </button>
           </form>
 

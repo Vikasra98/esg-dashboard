@@ -3,34 +3,76 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-
-const stats = [
-  {
-    title: "Companies Verified",
-    value: "1245",
-    color: "bg_card_sky",
-    text: "text-white",
-    icon: "/icon/insurance.png",
-  },
-  {
-    title: "Tokens Issued",
-    value: "5,876,123",
-    color: "bg_card_purple",
-    text: "text-white",
-    icon: "/icon/blockchain.png",
-  },
-  {
-    title: "Last Verification Date",
-    value: "2023-10-26",
-    color: "bg_card_red",
-    text: "text-white",
-    icon: "/icon/calendar.png",
-  },
-];
+import { useState, useEffect } from "react";
+import { metricsApi } from "../helper/api";
+import { MetricsOverview } from "../types/api";
 
 export default function StatsCards() {
+  const [metrics, setMetrics] = useState<MetricsOverview | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const data = await metricsApi.getOverview();
+        setMetrics(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch metrics");
+        console.error("Error fetching metrics:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMetrics();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "No data";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
+  const stats = [
+    {
+      title: "Companies Verified",
+      value: isLoading ? "Loading..." : metrics ? formatNumber(metrics.companies_verified) : "0",
+      color: "bg_card_sky",
+      text: "text-white",
+      icon: "/icon/insurance.png",
+    },
+    {
+      title: "Tokens Issued",
+      value: isLoading ? "Loading..." : metrics ? formatNumber(metrics.tokens_issued) : "0",
+      color: "bg_card_purple",
+      text: "text-white",
+      icon: "/icon/blockchain.png",
+    },
+    {
+      title: "Last Verification Date",
+      value: isLoading ? "Loading..." : metrics ? formatDate(metrics.last_verification_date) : "No data",
+      color: "bg_card_red",
+      text: "text-white",
+      icon: "/icon/calendar.png",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+      {error && (
+        <div className="col-span-full bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
       {stats.map((stat, i) => (
         <motion.div
           key={i}

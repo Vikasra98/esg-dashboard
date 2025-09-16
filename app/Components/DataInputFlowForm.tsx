@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import SelectDropdown from "./SelectDropdown";
 import VerifySubmision from "./VerifySubmision";
+import { documentApi, submitFieldData, uploadApi } from "../helper/api";
 
 // Example list for select dropdown
 const countryList = ["India", "USA", "UK", "Germany"];
@@ -15,16 +16,80 @@ export default function DataInputFlowForm() {
   const [step, setStep] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [doc_id, setDoc_id] = useState();
+  const [loading, setLoading] = useState(false);
   console.log(step, "step");
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+
+      try {
+        setLoading(true);
+
+        // Step 1: Get signed URL
+        const signedData = await uploadApi.signUpload(selectedFile);
+
+        // Step 2: Create document record
+        await documentApi.create({
+          company_id: "COM-AWHF-BSPS", // Replace with dynamic value if needed
+          s3_uri: signedData.url,
+          sha256: signedData.expected_sha256,
+          filetype: "PDF",
+          uploaded_by: "VER-P8B9-A1YZ", // Replace with logged-in user
+        });
+
+        console.log("Document created & ID stored in localStorage ✅");
+      } catch (err) {
+        console.error("Upload failed:", err);
+      } finally {
+        setLoading(false);
+      }
     }
+  };
+
+  const handleInputChange = (key: string, value: string | number) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
   const handleSelectChange = (value: string) => {
     console.log("Selected:", value);
+  };
+
+  const handleSave = async () => {
+    try {
+      const user = localStorage.getItem("user") || "VER-DEFAULT";
+      const companyId = localStorage.getItem("companyId") || "COM-DEFAULT";
+      const documentId = localStorage.getItem("documentId");
+
+      // Example for Renewable Energy Used
+      const renewableEnergyUsed = formData["renewableEnergyUsed"] || 0;
+
+      const payload: any = {
+        company_id: companyId,
+        template_id: "ENV.SCOPE2.TCO2E", // adjust based on your logic
+        raw_value: renewableEnergyUsed,
+        unit: "kgCO2e",
+        period_start: "2025-01-01T00:00:00Z", // static for now
+        period_end: "2025-01-31T23:59:59Z",
+        document_id: documentId,
+        submitted_by: user,
+        status: "pending",
+      };
+
+      console.log("Submitting payload:", payload);
+      await submitFieldData(payload);
+
+      setIsCompleted(true);
+    } catch (err) {
+      console.error("Failed to submit:", err);
+      alert("Failed to submit data. Check console for details.");
+    }
   };
 
   const policyOptions = [
@@ -228,6 +293,13 @@ export default function DataInputFlowForm() {
                         type="number"
                         maxLength={80}
                         placeholder="0 %"
+                        value={formData["renewableEnergyUsed"] || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "renewableEnergyUsed",
+                            e.target.value
+                          )
+                        }
                         className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] bg-white border-white`}
                       />
                     </div>
@@ -424,7 +496,9 @@ export default function DataInputFlowForm() {
                   height={36}
                   width={36}
                 />
-                Upload Supporting Document Mandatory
+                {loading
+                  ? "Uploading..."
+                  : "Upload Supporting Document Mandatory"}
               </label>
               <input
                 type="file"
@@ -449,7 +523,7 @@ export default function DataInputFlowForm() {
             </button>
             <button
               className="px-6 py-2 lg:py-[18px] lg:px-[80px] rounded-lg bg-[#1A3C34] text-white h-auto text-2xl leading-[34px] cursor-pointer font-semibold"
-              onClick={() => setIsCompleted(true)}
+              onClick={handleSave}
             >
               Save
             </button>

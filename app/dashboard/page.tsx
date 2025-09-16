@@ -2,28 +2,34 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Sidebar from "../Components/Sidebar";
-import Topbar from "../Components/Topbar";
 import StatsCards from "../Components/StatsCards";
 import EmissionsChart from "../Components/EmissionsChart";
 import BudsChart from "../Components/BudsChart";
 import RecentVerification from "../Components/RecentVerification";
 import AuthLayout from "../Layout/AuthLayout";
+import { ProtectedRoute } from "../Components/ProtectedRoute";
 
 export default function Dashboard() {
+  // Remove duplicate API call - RecentVerification component will handle fetching
+
   return (
-    <AuthLayout pageTitle={"Dashboard"} activeTitle="/dashboard">
-      <h3 className="text-[28px] leading-[38px] font-bold mb-8 text-[#F5F5F3]">
-        Company A
-      </h3>
-      <StatsCards />
+    <ProtectedRoute>
+      <AuthLayout pageTitle={"Dashboard"} activeTitle="/dashboard">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-[28px] leading-[38px] font-bold text-[#F5F5F3]">
+            ESG Dashboard
+          </h3>
+        </div>
+        
+        <StatsCards />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <EmissionsChart />
-        <BudsChart />
-      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <EmissionsChart />
+          <BudsChart />
+        </div>
 
-      <RecentVerification />
-    </AuthLayout>
+        <RecentVerification />
+      </AuthLayout>
+    </ProtectedRoute>
   );
 }

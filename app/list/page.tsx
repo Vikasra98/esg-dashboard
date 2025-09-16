@@ -1,8 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Pagination from "../Components/Pagination";
 import AuthLayout from "../Layout/AuthLayout";
+import { ProtectedRoute } from "../Components/ProtectedRoute";
+import { companyApi } from "../helper/api";
+import { Company } from "../types/api";
 import { FaCalendar, FaCheckSquare, FaUser } from "react-icons/fa";
 import {
   MdBalance,
@@ -19,116 +23,125 @@ import DeleteCompanyModal from "../Components/DeleteCompanyModal";
 import CompanyDashboard from "../Components/CompanyDashboard";
 import UpdateDataFlowModal from "../Components/UpdateDataFlowModal";
 
-const companies = [
-  {
-    order: 1,
-    name: "EcoSolutions Inc.",
-    sector: "Energy",
-    country: "Germany",
-    status: "Verified",
-    score: 80.5,
-    verifiedBy: "PwC Germany",
-  },
-  {
-    order: 2,
-    name: "GreenHarvest Co.",
-    sector: "Materials",
-    country: "USA",
-    status: "Pending",
-    score: 75.2,
-    verifiedBy: "KPMG US",
-  },
-  {
-    order: 3,
-    name: "AquaPure Global",
-    sector: "Utilities (Water)",
-    country: "India",
-    status: "Verified",
-    score: 68.2,
-    verifiedBy: "Bureau Veritas",
-  },
-  {
-    order: 4,
-    name: "RenewGen Power Ltd.",
-    sector: "Energy (Renewables)",
-    country: "UK",
-    status: "Active",
-    score: 86.5,
-    verifiedBy: "EY UK",
-  },
-  {
-    order: 5,
-    name: "MediLife Pharma Corp.",
-    sector: "Healthcare/Pharma",
-    country: "Switzerland",
-    status: "Verified",
-    score: 80.2,
-    verifiedBy: "Deloitte CH",
-  },
-  {
-    order: 6,
-    name: "AgriNext Foods",
-    sector: "Consumer Staples",
-    country: "Brazil",
-    status: "Pending",
-    score: 78.4,
-    verifiedBy: "KPMG Brazil",
-  },
-  {
-    order: 7,
-    name: "NeonTech Systems",
-    sector: "Information Technology",
-    country: "Finland",
-    status: "Verified",
-    score: 92.3,
-    verifiedBy: "PwC Finland",
-  },
-  {
-    order: 8,
-    name: "UrbanInfra Builders",
-    sector: "Industrial/Construction",
-    country: "UAE",
-    status: "Verified",
-    score: 84.1,
-    verifiedBy: "EY MENA",
-  },
-  {
-    order: 9,
-    name: "OceanHarvest Shipping",
-    sector: "Transportation",
-    country: "Singapore",
-    status: "Verified",
-    score: 81.7,
-    verifiedBy: "SGS Singapore",
-  },
-  {
-    order: 10,
-    name: "BlueEarth Financials",
-    sector: "Financials",
-    country: "Canada",
-    status: "Verified",
-    score: 88.9,
-    verifiedBy: "Deloitte Canada",
-  },
-];
-
 export default function page() {
+  const router = useRouter();
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isDashboard, setIsDashboard] = useState(false);
-  const [selected, setSelected] = useState<number[]>([1, 2]); // example: first 2 selected
+  const [selected, setSelected] = useState<number[]>([]);
+  const [statusFilter, setStatusFilter] = useState<
+    "Active" | "Pending" | "Verified" | "Rejected" | ""
+  >("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const toggleSelect = (order: number) => {
+  // Fetch companies on component mount and when filters change
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const params = {
+          status: statusFilter || undefined,
+          skip: (currentPage - 1) * 20,
+          limit: 20,
+        };
+
+        const response = await companyApi.getAll(params);
+
+        // Handle different response structures
+        if (Array.isArray(response)) {
+          // If response is directly an array
+          setCompanies(response);
+          setTotalCount(response.length);
+          setTotalPages(Math.ceil(response.length / 20));
+        } else if (response.data && Array.isArray(response.data)) {
+          // If response has data property
+          setCompanies(response.data);
+          const total =
+            response.meta?.pagination?.total || response.data.length;
+          const pageSize = response.meta?.pagination?.pageSize || 20;
+          setTotalCount(total);
+          setTotalPages(Math.ceil(total / pageSize));
+        } else {
+          // Fallback
+          setCompanies([]);
+          setTotalCount(0);
+          setTotalPages(1);
+        }
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch companies");
+        console.error("Error fetching companies:", err);
+        setCompanies([]);
+        setTotalCount(0);
+        setTotalPages(1);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, [currentPage, statusFilter]);
+
+  const toggleSelect = (companyId: number) => {
     setSelected((prev) =>
-      prev.includes(order)
-        ? prev.filter((id) => id !== order)
-        : [...prev, order]
+      prev.includes(companyId)
+        ? prev.filter((id) => id !== companyId)
+        : [...prev, companyId]
     );
   };
 
+  const handleDeleteClick = (company: Company) => {
+    setCompanyToDelete(company);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!companyToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await companyApi.delete(companyToDelete.id);
+
+      // Remove the deleted company from the list
+      setCompanies((prev) =>
+        prev.filter((company) => company.id !== companyToDelete.id)
+      );
+      setTotalCount((prev) => prev - 1);
+
+      // Close modal and reset state
+      setDeleteModalOpen(false);
+      setCompanyToDelete(null);
+
+      // Show success message (optional)
+      console.log("Company deleted successfully");
+    } catch (error: any) {
+      setError(error.message || "Failed to delete company");
+      console.error("Error deleting company:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setCompanyToDelete(null);
+  };
+
+  const handleAddNew = () => {
+    router.push("/create-company");
+  };
+
   return (
-    <>
+    <ProtectedRoute>
       {!isDashboard ? (
         <AuthLayout pageTitle={"List of All"} activeTitle="/list">
           <main className="min-h-screen bg-[#123D2A] text-white rounded-xl border border-[#416455]">
@@ -136,21 +149,46 @@ export default function page() {
               <p className="text-xl font-semibold">List of All</p>
               <div className="flex space-x-3 items-center">
                 <p className="text-sm leading-3.5">
-                  <span className="text-[#D7A992]">1-10 </span>of 256
+                  <span className="text-[#D7A992]">
+                    {isLoading
+                      ? "Loading..."
+                      : `${(currentPage - 1) * 20 + 1}-${Math.min(
+                          currentPage * 20,
+                          totalCount
+                        )}`}
+                  </span>{" "}
+                  of {totalCount}
                 </p>
-                <select className="bg-[#416455] px-3 py-2 text-sm rounded-lg border border-[#3B544A]">
-                  <FaCalendar className="w-2.5 h-2.5 text-white" />
-                  <option>Jan 2025</option>
+                <select
+                  className="bg-[#416455] px-3 py-2 text-sm rounded-lg border border-[#3B544A]"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                >
+                  <option value="">All Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Verified">Verified</option>
+                  <option value="Rejected">Rejected</option>
                 </select>
                 <button className="bg-[#D99A70] hover:bg-[#FF6932] px-4 py-2 text-[10px] rounded-lg font-medium flex items-center gap-1.5">
                   <MdBalance className="h-3 w-3" />
                   Compare Data
                 </button>
-                <button className="bg-[#D99A70] hover:bg-[#FBBF24] px-4 py-2 text-[10px] rounded-lg font-medium text-white">
+                <button
+                  onClick={handleAddNew}
+                  className="bg-[#D99A70] hover:bg-[#FBBF24] px-4 py-2 text-[10px] rounded-lg font-medium text-white transition-colors cursor-pointer"
+                >
                   Add New
                 </button>
               </div>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-[30px]">
+                {error}
+              </div>
+            )}
 
             {/* Table */}
             <div className="overflow-x-auto">
@@ -162,7 +200,7 @@ export default function page() {
                         <span>
                           <MdIndeterminateCheckBox className="text-[#D99A70] h-2.5 w-2.5" />
                         </span>
-                        <span className="text-[10px] font-semibold">Order</span>
+                        <span className="text-[10px] font-semibold">ID</span>
                       </div>
                     </th>
                     <th className=" py-3">
@@ -211,7 +249,7 @@ export default function page() {
                           <MdLeaderboard className="text-[#D99A70] h-2.5 w-2.5" />
                         </span>
                         <span className="text-[10px] font-semibold">
-                          Bud Score
+                          Contact Email
                         </span>
                       </div>
                     </th>
@@ -221,7 +259,7 @@ export default function page() {
                           <MdVerified className="text-[#D99A70] h-2.5 w-2.5" />
                         </span>
                         <span className="text-[10px] font-semibold">
-                          Last Verified By
+                          Contact Person
                         </span>
                       </div>
                     </th>
@@ -229,73 +267,95 @@ export default function page() {
                   </tr>
                 </thead>
                 <tbody>
-                  {companies.map((c, i) => (
-                    <motion.tr
-                      key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="py-6 table_row_bg"
-                    >
-                      <td className="text-[10px] leading-3.5 font-medium py-6 ps-[27px] flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(c.order)}
-                          onChange={() => toggleSelect(c.order)}
-                          className="w-4 h-4 accent-orange-500 rounded text-white border-white bg-transparent"
-                        />
-                        {c.order}
-                      </td>
+                  {isLoading ? (
+                    <tr>
                       <td
-                        className="text-[10px] leading-3.5 font-medium py-6 cursor-pointer"
-                        onClick={() => setIsDashboard(true)}
+                        colSpan={8}
+                        className="text-center py-8 text-[#D7A992]"
                       >
-                        {c.name}
+                        Loading companies...
                       </td>
-                      <td className="text-[10px] leading-3.5 font-medium py-6">
-                        {c.sector}
+                    </tr>
+                  ) : companies.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="text-center py-8 text-[#D7A992]"
+                      >
+                        No companies found
                       </td>
-                      <td className="text-[10px] leading-3.5 font-medium py-6">
-                        {c.country}
-                      </td>
-                      <td className="text-[10px] leading-3.5 font-medium py-6">
-                        <span
-                          className={`px-1.5 ps-[13px] py-0.5 rounded text-[10px] border leading-3.5 font-medium relative after:absolute after:h-[3px] after:w-[3px] after:rounded-full  after:left-1.5 after:top-[calc(50%-1.5px)] ${
-                            c.status === "Verified"
-                              ? "bg-[#05C16833] text-[#F5F5F3] after:bg-[#05C168] border-[#05C16833]"
-                              : c.status === "Pending"
-                              ? "bg-yellow-500/20 text-[#FDB52A] after:bg-[#FDB52A] border-[#FFB01633]"
-                              : "bg-[#00C2FF33] text-[#00C2FF] after:bg-[#00C2FF] border-[#00C2FF33]"
-                          }`}
+                    </tr>
+                  ) : (
+                    companies.map((company, i) => (
+                      <motion.tr
+                        key={company.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="py-6 table_row_bg"
+                      >
+                        <td className="text-[10px] leading-3.5 font-medium py-6 ps-[27px] flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={selected.includes(company.id)}
+                            onChange={() => toggleSelect(company.id)}
+                            className="w-4 h-4 accent-orange-500 rounded text-white border-white bg-transparent"
+                          />
+                          {company.id}
+                        </td>
+                        <td
+                          className="text-[10px] leading-3.5 font-medium py-6 cursor-pointer"
+                          onClick={() => setIsDashboard(true)}
                         >
-                          {c.status}
-                        </span>
-                      </td>
-                      <td className="text-[10px] leading-3.5 font-medium py-6">
-                        {c.score}
-                      </td>
-                      <td className="text-[10px] leading-3.5 font-medium py-6">
-                        {c.verifiedBy}
-                      </td>
-                      <td className="text-[10px] leading-3.5 font-medium space-x-2 py-6 pr-[27px]">
-                        <button
-                          className="text-[#D99A70] cursor-pointer"
-                          onClick={() => setIsEdit(true)}
-                        >
-                          <HiMiniPencil className="h-3 w-3" />
-                        </button>
-                        <button
-                          onClick={() => setOpen(true)}
-                          className="text-[#D99A70] cursor-pointer"
-                        >
-                          <RiDeleteBin7Fill className="h-3 w-3" />
-                        </button>
-                        <button className="text-[#D99A70] cursor-pointer">
-                          <IoMdEye className="h-3 w-3" />
-                        </button>
-                      </td>
-                    </motion.tr>
-                  ))}
+                          {company.name}
+                        </td>
+                        <td className="text-[10px] leading-3.5 font-medium py-6">
+                          {company.sector}
+                        </td>
+                        <td className="text-[10px] leading-3.5 font-medium py-6">
+                          {company.country}
+                        </td>
+                        <td className="text-[10px] leading-3.5 font-medium py-6">
+                          <span
+                            className={`px-1.5 ps-[13px] py-0.5 rounded text-[10px] border leading-3.5 font-medium relative after:absolute after:h-[3px] after:w-[3px] after:rounded-full  after:left-1.5 after:top-[calc(50%-1.5px)] ${
+                              company.status === "Verified"
+                                ? "bg-[#05C16833] text-[#F5F5F3] after:bg-[#05C168] border-[#05C16833]"
+                                : company.status === "Pending"
+                                ? "bg-yellow-500/20 text-[#FDB52A] after:bg-[#FDB52A] border-[#FFB01633]"
+                                : company.status === "Active"
+                                ? "bg-[#00C2FF33] text-[#00C2FF] after:bg-[#00C2FF] border-[#00C2FF33]"
+                                : "bg-red-500/20 text-red-400 after:bg-red-400 border-red-500/20"
+                            }`}
+                          >
+                            {company.status}
+                          </span>
+                        </td>
+                        <td className="text-[10px] leading-3.5 font-medium py-6">
+                          {company.contact_email}
+                        </td>
+                        <td className="text-[10px] leading-3.5 font-medium py-6">
+                          {company.contact_name}
+                        </td>
+                        <td className="text-[10px] leading-3.5 font-medium space-x-2 py-6 pr-[27px]">
+                          <button
+                            className="text-[#D99A70] cursor-pointer"
+                            onClick={() => setIsEdit(true)}
+                          >
+                            <HiMiniPencil className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(company)}
+                            className="text-[#D99A70] cursor-pointer"
+                          >
+                            <RiDeleteBin7Fill className="h-3 w-3" />
+                          </button>
+                          <button className="text-[#D99A70] cursor-pointer">
+                            <IoMdEye className="h-3 w-3" />
+                          </button>
+                        </td>
+                      </motion.tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -303,18 +363,83 @@ export default function page() {
             {/* Pagination */}
             <Pagination
               currentPage={currentPage}
-              totalPages={8}
+              totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
           </main>
-          <DeleteCompanyModal open={open} setOpen={setOpen} />
+          {/* {deleteModalOpen && (
+            <DeleteCompanyModal
+              open={open}
+              setOpen={setOpen}
+              handleDeleteCancel={handleDeleteCancel}
+              handleDeleteConfirm={handleDeleteConfirm}
+            />
+          )} */}
           <UpdateDataFlowModal isEdit={isEdit} setIsEdit={setIsEdit} />
+
+          {/* Delete Confirmation Modal */}
+          {deleteModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Delete Company
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Are you sure you want to delete{" "}
+                  <strong>{companyToDelete?.name}</strong>? This action cannot
+                  be undone.
+                </p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={handleDeleteCancel}
+                    disabled={isDeleting}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteConfirm}
+                    disabled={isDeleting}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </AuthLayout>
       ) : (
         <AuthLayout pageTitle={"ESG Dashboard"} activeTitle="/list">
           <CompanyDashboard />
         </AuthLayout>
       )}
-    </>
+    </ProtectedRoute>
   );
 }
