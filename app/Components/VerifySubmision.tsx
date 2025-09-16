@@ -21,7 +21,7 @@ const VerifySubmision = () => {
     try {
       const field = localStorage.getItem("fieldId") || "COM-DEFAULT";
       const payload: any = {
-        field_id: "FSUB-1234-5678",
+        field_id: fieldData,
       };
 
       console.log("Submitting payload:", payload);

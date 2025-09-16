@@ -71,14 +71,14 @@ export default function DataInputFlowForm() {
       const renewableEnergyUsed = formData["renewableEnergyUsed"] || 0;
 
       const payload: any = {
-        company_id: companyId,
+        company_id: "COM-AWHF-BSPS",
         template_id: "ENV.SCOPE2.TCO2E", // adjust based on your logic
         raw_value: renewableEnergyUsed,
         unit: "kgCO2e",
         period_start: "2025-01-01T00:00:00Z", // static for now
         period_end: "2025-01-31T23:59:59Z",
-        document_id: documentId,
-        submitted_by: user,
+        document_id: "DOC-V35D-Q58B",
+        submitted_by: "VER-P8B9-A1YZ",
         status: "pending",
       };
 

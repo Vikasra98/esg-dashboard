@@ -336,11 +336,15 @@ export const uploadApi = {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await api.post("/v1/uploads/sign", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await internalApi.post(
+        "/api/v1/uploads/sign",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       return response.data;
     } catch (error: any) {
@@ -365,7 +369,7 @@ export const documentApi = {
     uploaded_by: string;
   }): Promise<any> => {
     try {
-      const response = await api.post("/v1/documents", docData);
+      const response = await internalApi.post("/api/v1/documents", docData);
 
       // Store documentId in localStorage
       if (response.data?.id) {
@@ -405,8 +409,8 @@ export interface ApiResponse<T> {
 // Submit field data
 export const submitFieldData = async (payload: FieldPayload) => {
   try {
-    const response: any = await api.post<ApiResponse<FieldPayload>>(
-      "/v1/fields",
+    const response: any = await internalApi.post<ApiResponse<FieldPayload>>(
+      "/api/v1/fields",
       payload
     );
     console.log(response, "response>>");
@@ -421,8 +425,8 @@ export const submitFieldData = async (payload: FieldPayload) => {
 
 export const submitFieldId = async (payload: FieldPayload) => {
   try {
-    const response: any = await api.post<ApiResponse<FieldPayload>>(
-      "/v1/mint",
+    const response: any = await internalApi.post<ApiResponse<FieldPayload>>(
+      "/api/v1/mint",
       payload
     );
     localStorage.setItem("mintResponse", JSON.stringify(response));

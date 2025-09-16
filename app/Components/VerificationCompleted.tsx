@@ -2,35 +2,64 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MatrixBarChart from "./MatrixBarChart";
 import ArcCurveChart from "./ArcCurveChart";
+import { formatDate } from "../helper/utils";
 
 const steps = ["Environment", "Social", "Governance"];
 
 const VerificationCompleted = () => {
   const [step, setStep] = useState(0);
+  const [mintInfo, setMintInfo] = useState<any>();
+  const [userInfo, setUserInfo] = useState<any>({});
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("userInfo");
+      if (stored) {
+        setUserInfo(JSON.parse(stored));
+      }
+    }
+  }, []);
+  // console.log(`mintInfo`, mintInfo.data);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("mintResponse");
+      if (stored) {
+        setMintInfo(JSON.parse(stored));
+      }
+    }
+  }, []);
 
   const tokenInfo: any = [
     {
       id: 1,
       src: "/icon/token.png",
       title: "BUDS Token ID",
-      value: "BUDS-ENV-000123",
+      value: mintInfo?.data?.buds_id || "—",
     },
     {
-      id: 1,
+      id: 2,
       src: "/icon/verifier.png",
       title: "Verifier Attribution",
-      value: "Purnima Sharma",
+      value: userInfo?.full_name || "—",
     },
     {
-      id: 1,
+      id: 3,
       src: "/icon/timestamp.png",
       title: "Timestamp",
-      value: "August 29, 2025 at 7:14 PM",
+      value: mintInfo?.data?.timestamp
+        ? formatDate(mintInfo.data.timestamp)
+        : "—",
     },
   ];
+
+  if (!mintInfo?.data) {
+    return <p className="text-center py-8 text-[#D7A992]">Loading...</p>;
+  }
+
   return (
     <>
       <motion.div

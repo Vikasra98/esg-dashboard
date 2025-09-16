@@ -36,8 +36,10 @@ export default function login() {
 
     try {
       const response: any = await authApi.login(data);
+      console.log(response, "response<<<<<");
+
       console.log("Login successful:", response.user_id);
-      localStorage.setItem("user", response.user_id);
+      localStorage.setItem("user", response.user.id);
       localStorage.setItem("userInfo", JSON.stringify(response.user));
       // Redirect to dashboard after successful login
       router.push("/dashboard");
