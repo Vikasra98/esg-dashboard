@@ -13,6 +13,7 @@ const VerificationCompleted = () => {
   const [step, setStep] = useState(0);
   const [mintInfo, setMintInfo] = useState<any>();
   const [userInfo, setUserInfo] = useState<any>({});
+  const [budData, setBudData] = useState<any>();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -23,6 +24,14 @@ const VerificationCompleted = () => {
     }
   }, []);
   // console.log(`mintInfo`, mintInfo.data);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedBuds = localStorage.getItem("buds_id");
+      if (storedBuds) {
+        setBudData(JSON.parse(storedBuds));
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -38,7 +47,7 @@ const VerificationCompleted = () => {
       id: 1,
       src: "/icon/token.png",
       title: "BUDS Token ID",
-      value: mintInfo?.data?.buds_id || "—",
+      value: budData?.length ? budData.join(", ") : "—",
     },
     {
       id: 2,
@@ -135,7 +144,7 @@ const VerificationCompleted = () => {
                     {item.title}
                   </h4>
                   <p className="text-xl lead[32px] font-normal text-nowrap">
-                    {item.value}
+                    {item.value} <br />
                   </p>
                 </div>
               ))}

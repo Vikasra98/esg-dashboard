@@ -16,12 +16,13 @@ const statusColors: Record<string, string> = {
 };
 
 interface IProps {
+  setIsToken?: any;
   setIsDashboard?: any;
   setIsEdit?: any;
 }
 
 export default function RecentVerification(props: IProps) {
-  const { setIsDashboard, setIsEdit } = props;
+  const { setIsToken, setIsDashboard, setIsEdit } = props;
   const router = useRouter();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,13 +161,14 @@ export default function RecentVerification(props: IProps) {
         <table className="w-full text-sm text-gray-300">
           <thead className="text-gray-400">
             <tr>
-              <th className="p-3 text-left">ID</th>
+              <th className="p-3 text-left">Company ID</th>
               <th className="p-3 text-left">Company Name</th>
               <th className="p-3 text-left">Sector</th>
               <th className="p-3 text-left">Country</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Contact Email</th>
               <th className="p-3 text-left">Contact Person</th>
+              <th className="p-3 text-left">View Tokens</th>
               <th className="p-3 text-left">Actions</th>
             </tr>
           </thead>
@@ -218,24 +220,39 @@ export default function RecentVerification(props: IProps) {
                   </td>
                   <td className="p-3 py-6">{company.contact_email}</td>
                   <td className="p-3 py-6">{company.contact_name}</td>
-
+                  <td className="p-3 py-6">
+                    <button
+                      onClick={() => setIsToken(true)}
+                      className="text-[#D99A70] hover:text-orange-400 cursor-pointer flex items-center"
+                    >
+                      <Eye size={16} /> <span className="ms-2">View</span>
+                    </button>
+                  </td>
+                  {/* <td className="p-3 py-6 flex gap-3">
+                    <button
+                      onClick={() => setIsEdit(true)}
+                      className="text-[#D99A70] hover:text-orange-400 cursor-pointer"
+                    >
+                      <Eye size={16} />
+                    </button>
+                  </td> */}
                   {/* Actions */}
                   <td className="p-3 py-6 flex gap-3">
                     <button
                       onClick={() => setIsEdit(true)}
-                      className="text-gray-400 hover:text-orange-400 cursor-pointer"
+                      className="text-[#D99A70] hover:text-orange-400 cursor-pointer"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => handleDeleteClick(company)}
-                      className="text-gray-400 hover:text-red-500 cursor-pointer"
+                      className="text-[#D99A70] hover:text-red-500 cursor-pointer"
                     >
                       <Trash2 size={16} />
                     </button>
                     <button
                       onClick={() => setIsDashboard(true)}
-                      className="text-gray-400 hover:text-white cursor-pointer"
+                      className="text-[#D99A70] hover:text-white cursor-pointer"
                     >
                       <Eye size={16} />
                     </button>

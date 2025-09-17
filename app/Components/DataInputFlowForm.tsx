@@ -67,25 +67,42 @@ export default function DataInputFlowForm() {
     try {
       const user = localStorage.getItem("user") || "VER-DEFAULT";
       const companyId = localStorage.getItem("companyId") || "COM-DEFAULT";
-      const documentId = localStorage.getItem("documentId");
+      const documentId = localStorage.getItem("documentId") || "DOC-DEFAULT";
 
       // Example for Renewable Energy Used
       const renewableEnergyUsed = formData["renewableEnergyUsed"] || 0;
 
-      const payload: any = {
-        company_id: "COM-AWHF-BSPS",
-        template_id: "ENV.SCOPE2.TCO2E", // adjust based on your logic
+      // Common fields
+      const commonFields = {
+        company_id: companyId,
+        period_start: "2025-01-01T00:00:00Z",
+        period_end: "2025-01-31T23:59:59Z",
+        document_id: documentId,
+        submitted_by: user,
         raw_value: renewableEnergyUsed,
         unit: "kgCO2e",
-        period_start: "2025-01-01T00:00:00Z", // static for now
-        period_end: "2025-01-31T23:59:59Z",
-        document_id: "DOC-V35D-Q58B",
-        submitted_by: "VER-P8B9-A1YZ",
         status: "pending",
       };
 
+      // Payload array
+      const payload = [
+        {
+          ...commonFields,
+          template_id: "ENV.SCOPE1.TCO2E",
+        },
+        {
+          ...commonFields,
+          template_id: "ENV.SCOPE2.TCO2E",
+        },
+        {
+          ...commonFields,
+          template_id: "ENV.RENEWABLE_ENERGY.USE",
+        },
+      ];
+
       console.log("Submitting payload:", payload);
-      await submitFieldData(payload);
+
+      await submitFieldData(payload); // send array instead of single object
       setIsLoading(false);
       setIsCompleted(true);
     } catch (err) {

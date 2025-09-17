@@ -1,25 +1,41 @@
 // app/dashboard/page.tsx
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { ProtectedRoute } from "../Components/ProtectedRoute";
+import AuthLayout from "../Layout/AuthLayout";
 import StatsCards from "../Components/StatsCards";
 import EmissionsChart from "../Components/EmissionsChart";
 import BudsChart from "../Components/BudsChart";
 import RecentVerification from "../Components/RecentVerification";
-import AuthLayout from "../Layout/AuthLayout";
-import { ProtectedRoute } from "../Components/ProtectedRoute";
 import UpdateDataFlowModal from "../Components/UpdateDataFlowModal";
-import { useState } from "react";
 import CompanyDashboard from "../Components/CompanyDashboard";
+import TokenList from "../Components/TokenList";
 
 export default function Dashboard() {
   const [isEdit, setIsEdit] = useState(false);
-  const [isDashboard, setIsDashboard] = useState(false);
-  // Remove duplicate API call - RecentVerification component will handle fetching
+  const [isDashboard, setIsDashboard] = useState(true); // default: dashboard screen
+  const [isToken, setIsToken] = useState(false);
+
+  // helpers to switch views safely
+  const showDashboard = () => {
+    setIsDashboard(true);
+    setIsToken(false);
+  };
+
+  const showCompanyDashboard = () => {
+    setIsDashboard(false);
+    setIsToken(false);
+  };
+
+  const showTokenList = () => {
+    setIsDashboard(false);
+    setIsToken(true);
+  };
 
   return (
     <ProtectedRoute>
-      {!isDashboard ? (
+      {isDashboard && !isToken && (
         <AuthLayout pageTitle={"Dashboard"} activeTitle="/dashboard">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-[28px] leading-[38px] font-bold text-[#F5F5F3]">
@@ -35,14 +51,23 @@ export default function Dashboard() {
           </div>
 
           <RecentVerification
+            setIsToken={showTokenList}
             setIsEdit={setIsEdit}
-            setIsDashboard={setIsDashboard}
+            setIsDashboard={showCompanyDashboard}
           />
           <UpdateDataFlowModal isEdit={isEdit} setIsEdit={setIsEdit} />
         </AuthLayout>
-      ) : (
+      )}
+
+      {!isDashboard && !isToken && (
         <AuthLayout pageTitle={"ESG Dashboard"} activeTitle="/list">
           <CompanyDashboard />
+        </AuthLayout>
+      )}
+
+      {isToken && (
+        <AuthLayout pageTitle={"Token List"} activeTitle="/dashboard">
+          <TokenList />
         </AuthLayout>
       )}
     </ProtectedRoute>

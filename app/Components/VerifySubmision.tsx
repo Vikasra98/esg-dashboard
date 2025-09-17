@@ -67,7 +67,7 @@ const VerifySubmision = () => {
                       ? "bg-gray-400 text-gray-200 cursor-not-allowed"
                       : "bg-[#12291E] text-[#F5F5F3] hover:bg-green-800"
                   }`}
-                  onClick={handleSave}
+                  onClick={() => setIsVerify(true)}
                 >
                   {isLoading ? "Submitting..." : "Submit for Verification"}
                 </button>

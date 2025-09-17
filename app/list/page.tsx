@@ -41,6 +41,7 @@ export default function page() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isToken, setIsToken] = useState(false);
 
   // Fetch companies on component mount and when filters change
   useEffect(() => {

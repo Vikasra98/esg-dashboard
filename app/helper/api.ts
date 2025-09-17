@@ -400,15 +400,16 @@ export interface ApiResponse<T> {
 }
 
 // Submit field data
-export const submitFieldData = async (payload: FieldPayload) => {
+export const submitFieldData = async (payload: any) => {
   try {
     const response: any = await api.post<ApiResponse<FieldPayload>>(
-      "/v1/fields",
+      "/v1/fields/batch",
       payload
     );
     console.log(response, "response>>");
 
     localStorage.setItem("fieldId", response.data.id);
+    localStorage.setItem("buds_id", JSON.stringify(response.data.buds_ids));
     return response.data;
   } catch (error: any) {
     console.error("Error submitting field data:", error);
