@@ -182,7 +182,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        CO₂ Emissions(0 tons/year)
+                        CO₂ Emissions(CO₂)
                       </label>
                       <input
                         type="number"
