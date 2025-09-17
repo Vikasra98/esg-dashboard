@@ -69,12 +69,12 @@ export default function login() {
             Oct 21
           </h4>
         </div>
-        <button
+        {/* <button
           onClick={() => router.push("/signUp")}
           className="cursor-pointer lg:mt-[50px] mt-10 w-full rounded-md bg-[#D99A70] px-6 lg:py-5 py-3 font-semibold leading-[34px] text-2xl text-[white] hover:bg-[#d7894e] transition"
         >
           Register Now →
-        </button>
+        </button> */}
       </div>
 
       {/* Right Section */}

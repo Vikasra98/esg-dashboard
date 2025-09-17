@@ -31,7 +31,7 @@ export default function EmissionsChart() {
       className=" lg:col-span-2 bg-[#123D2A80] p-6 rounded-[10px] border border-[#416455]"
     >
       <h2 className="text-lg font-semibold mb-4">
-        Scope 1 Emissions Verified (tons co2e)
+        Scope 1 Emissions Verified (tons CO2E)
       </h2>
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>

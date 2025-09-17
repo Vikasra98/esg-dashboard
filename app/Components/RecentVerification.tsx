@@ -170,13 +170,13 @@ export default function RecentVerification(props: IProps) {
           <thead className="text-gray-400">
             <tr>
               <th className="p-3 text-left">Company ID</th>
-              <th className="p-3 text-left">Company Name</th>
+              <th className="p-3 text-left text-nowrap">Company Name</th>
               <th className="p-3 text-left">Sector</th>
               <th className="p-3 text-left">Country</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Contact Email</th>
-              <th className="p-3 text-left">Contact Person</th>
-              <th className="p-3 text-left">View Tokens</th>
+              <th className="p-3 text-left text-nowrap">Contact Person</th>
+              <th className="p-3 text-left text-nowrap">View Tokens</th>
               <th className="p-3 text-left">Actions</th>
             </tr>
           </thead>
@@ -210,7 +210,7 @@ export default function RecentVerification(props: IProps) {
                       onChange={() => toggleSelect(company.id)}
                       className="w-4 h-4 accent-orange-500 rounded text-white border-white bg-transparent"
                     />
-                    <span>{company.id}</span>
+                    <span className="text-nowrap">{company.id}</span>
                   </td>
 
                   <td className="p-3 py-6">{company.name}</td>
@@ -249,6 +249,7 @@ export default function RecentVerification(props: IProps) {
                   {/* Actions */}
                   <td className="p-3 py-6 flex gap-3">
                     <button
+                      title="Edit Company"
                       onClick={() => {
                         setSelectedCompanyId(company.id); // ✅ store ID
                         setIsEdit(true);
@@ -258,12 +259,14 @@ export default function RecentVerification(props: IProps) {
                       <Pencil size={16} />
                     </button>
                     <button
+                      title="Delete Company"
                       onClick={() => handleDeleteClick(company)}
                       className="text-[#D99A70] hover:text-red-500 cursor-pointer"
                     >
                       <Trash2 size={16} />
                     </button>
                     <button
+                      title="View Company Dashboard"
                       onClick={() => setIsDashboard(true)}
                       className="text-[#D99A70] hover:text-white cursor-pointer"
                     >

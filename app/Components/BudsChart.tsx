@@ -14,9 +14,9 @@ import { MoreVertical } from "lucide-react";
 
 const data = [
   { name: "Sun", red: 60, blue: 80, purple: 40 },
-  { name: "Sun", red: 40, blue: 60, purple: 50 },
-  { name: "Sun", red: 50, blue: 70, purple: 60 },
-  { name: "Sun", red: 55, blue: 65, purple: 80 },
+  { name: "Mon", red: 40, blue: 60, purple: 50 },
+  { name: "Tue", red: 50, blue: 70, purple: 60 },
+  { name: "Wed", red: 55, blue: 65, purple: 80 },
 ];
 
 export default function BudsChart() {

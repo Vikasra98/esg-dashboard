@@ -182,7 +182,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        CO₂ Emissions
+                        CO₂ Emissions(0 tons/year)
                       </label>
                       <input
                         type="number"
@@ -196,7 +196,21 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Scope 1 Emissions
+                        Scope 1 Emissions(0 tons/year)
+                      </label>
+                      <input
+                        type="number"
+                        maxLength={80}
+                        placeholder="c"
+                        className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] bg-white border-white`}
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label
+                        htmlFor=""
+                        className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
+                      >
+                        Scope 2 Emissions(0 tons/year)
                       </label>
                       <input
                         type="number"
@@ -210,7 +224,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Scope 2 Emissions
+                        Scope 3 Emissions(0 tons/year)
                       </label>
                       <input
                         type="number"
@@ -224,21 +238,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Scope 3 Emissions
-                      </label>
-                      <input
-                        type="number"
-                        maxLength={80}
-                        placeholder="0 tons/year"
-                        className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] bg-white border-white`}
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <label
-                        htmlFor=""
-                        className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
-                      >
-                        Water Consumed
+                        Water Consumed(0 m³)
                       </label>
                       <input
                         type="number"
@@ -252,7 +252,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        % Recycled Water
+                        % Recycled Water(0 %)
                       </label>
                       <input
                         type="number"
@@ -266,7 +266,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Total Waste Generated
+                        Total Waste Generated(0 tons)
                       </label>
                       <input
                         type="number"
@@ -280,7 +280,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        % Recycled Waste
+                        % Recycled Waste(0 %)
                       </label>
                       <input
                         type="number"
@@ -294,7 +294,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Energy Consumed
+                        Energy Consumed(0 kWh)
                       </label>
                       <input
                         type="number"
@@ -308,7 +308,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        % Renewable Energy Used
+                        % Renewable Energy Used(0 %)
                       </label>
                       <input
                         type="number"
@@ -348,7 +348,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        % Women Employees
+                        % Women Employees(0 %)
                       </label>
                       <input
                         type="number"
@@ -362,7 +362,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        % Women in Leadership Roles
+                        % Women in Leadership Roles(0 %)
                       </label>
                       <input
                         type="number"
@@ -390,7 +390,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Lost-Time Injury Frequency Rate
+                        Lost-Time Injury Frequency Rate(Liter)
                       </label>
                       <input
                         type="number"
@@ -404,7 +404,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        % of Revenue Spent on CSR/Community Programs
+                        % of Revenue Spent on CSR/Community Programs(0 %)
                       </label>
                       <input
                         type="number"
@@ -437,7 +437,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        % Independent Directors
+                        % Independent Directors(0 %)
                       </label>
                       <input
                         type="number"

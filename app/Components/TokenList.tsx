@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import Pagination from "./Pagination";
 import { getTokensByCompany } from "../helper/api";
 import { Eye } from "lucide-react";
+import { formatDate } from "../helper/utils";
 
 interface IProps {
   companyId?: any;
@@ -223,7 +224,7 @@ const TokenList = (props: IProps) => {
                     {company.matrix_effect}
                   </td>
                   <td className="text-[10px] leading-3.5 font-medium py-6">
-                    {company.timestamp}
+                    {formatDate(company.timestamp)}
                   </td>
                   <td className="text-[10px] leading-3.5 font-medium py-6">
                     {company.verifier_id}
