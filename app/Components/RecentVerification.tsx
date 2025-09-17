@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { companyApi } from "../helper/api";
 import { Company } from "../types/api";
+import { Tooltip } from "react-tooltip";
 
 const statusColors: Record<string, string> = {
   Verified: "bg-green-600/20 text-green-400",
@@ -249,29 +250,35 @@ export default function RecentVerification(props: IProps) {
                   {/* Actions */}
                   <td className="p-3 py-6 flex gap-3">
                     <button
-                      title="Edit Company"
                       onClick={() => {
                         setSelectedCompanyId(company.id); // ✅ store ID
                         setIsEdit(true);
                       }}
                       className="text-[#D99A70] hover:text-orange-400 cursor-pointer"
+                      data-tooltip-id="Edit_Company"
+                      data-tooltip-content="Edit Company"
                     >
                       <Pencil size={16} />
                     </button>
+                    <Tooltip id="Edit_Company" />
                     <button
-                      title="Delete Company"
+                      data-tooltip-id="Delete_Company"
+                      data-tooltip-content="Delete Company"
                       onClick={() => handleDeleteClick(company)}
                       className="text-[#D99A70] hover:text-red-500 cursor-pointer"
                     >
                       <Trash2 size={16} />
                     </button>
+                    <Tooltip id="Delete_Company" />
                     <button
-                      title="View Company Dashboard"
+                      data-tooltip-id="View_Company_Company"
+                      data-tooltip-content="View Company Company"
                       onClick={() => setIsDashboard(true)}
                       className="text-[#D99A70] hover:text-white cursor-pointer"
                     >
                       <Eye size={16} />
                     </button>
+                    <Tooltip id="View_Company_Company" />
                   </td>
                 </motion.tr>
               ))

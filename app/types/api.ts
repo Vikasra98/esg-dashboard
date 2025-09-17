@@ -123,3 +123,41 @@ export interface ApiError {
   details?: any;
   status: number;
 }
+
+export interface ScoringRequest {
+  name: string;
+  V: number;
+  M: number;
+  R_factor: number;
+  Sigma: number;
+  Theta: number;
+  L: number;
+  Pi: number;
+  CW: number;
+  c_urgency: number;
+  c_baseline: number;
+  c_u: number;
+  u: number;
+  gamma: number[];
+  r: number[];
+  w_d: number;
+  P: number[][];
+  theta: number[][];
+  A: number[][];
+  B: number[][];
+  C: number[][];
+  C_tier: number;
+  k: number;
+  S0: number;
+  tau: number;
+  T: number;
+  X_level: number;
+}
+
+export interface ScoringResponse {
+  name?: string;
+  parameters?: Record<string, number>;
+  V?: number;
+  M?: number;
+  [key: string]: any; // Allow for additional numeric keys
+}

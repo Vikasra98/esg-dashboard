@@ -24,6 +24,7 @@ import CompanyDashboard from "../Components/CompanyDashboard";
 import UpdateDataFlowModal from "../Components/UpdateDataFlowModal";
 import TokenList from "../Components/TokenList";
 import { Eye } from "lucide-react";
+import { Tooltip } from "react-tooltip";
 
 export default function page() {
   const router = useRouter();
@@ -366,21 +367,30 @@ export default function page() {
                           <button
                             className="text-[#D99A70] cursor-pointer"
                             onClick={() => setIsEdit(true)}
+                            data-tooltip-id="Edit_Company"
+                            data-tooltip-content="Edit Company"
                           >
                             <HiMiniPencil className="h-3 w-3" />
                           </button>
+                          <Tooltip id="Edit_Company" />
                           <button
+                            data-tooltip-id="Delete_Company"
+                            data-tooltip-content="Delete Company"
                             onClick={() => handleDeleteClick(company)}
                             className="text-[#D99A70] cursor-pointer"
                           >
                             <RiDeleteBin7Fill className="h-3 w-3" />
                           </button>
+                          <Tooltip id="Delete_Company" />
                           <button
+                            data-tooltip-id="View_Company_Company"
+                            data-tooltip-content="View Company Company"
                             onClick={() => setIsDashboard(true)}
                             className="text-[#D99A70] cursor-pointer"
                           >
                             <IoMdEye className="h-3 w-3" />
                           </button>
+                          <Tooltip id="View_Company_Company" />
                         </td>
                       </motion.tr>
                     ))

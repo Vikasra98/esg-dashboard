@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import MatrixBarChart from "./MatrixBarChart";
 import ArcCurveChart from "./ArcCurveChart";
 import { formatDate } from "../helper/utils";
+import ScoreSigmoidChart from "./ScoreSigmoidChart";
 
 const steps = ["Environment", "Social", "Governance"];
 
@@ -152,7 +153,8 @@ const VerificationCompleted = () => {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[26px] bg-[#0A1912] text-white">
             <MatrixBarChart />
-            <ArcCurveChart arcPosition={mintInfo?.data?.arc_position} />
+            {/* <ArcCurveChart arcPosition={mintInfo?.data?.arc_position} /> */}
+            <ScoreSigmoidChart />
           </div>
         </div>
       </motion.div>

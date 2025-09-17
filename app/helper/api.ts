@@ -11,6 +11,8 @@ import {
   CompaniesListResponse,
   CompaniesListParams,
   MetricsOverview,
+  ScoringRequest,
+  ScoringResponse,
 } from "../types/api";
 
 // Create axios instance
@@ -459,5 +461,22 @@ export const getTokensByCompany = async (companyId: string): Promise<any> => {
     };
     throw apiError;
   }
+};
+
+export const scoringApi = {
+  // Calculate scoring
+  calculate: async (scoringData: ScoringRequest): Promise<ScoringResponse> => {
+    try {
+      const response = await api.post("/v1/scoring/calculate", scoringData);
+      return response.data;
+    } catch (error: any) {
+      const apiError: ApiError = {
+        message: extractErrorMessage(error, "Failed to calculate scoring"),
+        details: error.response?.data,
+        status: error.response?.status || 500,
+      };
+      throw apiError;
+    }
+  },
 };
 export default api;

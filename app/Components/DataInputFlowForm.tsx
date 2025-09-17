@@ -196,7 +196,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Scope 1 Emissions(0 tons/year)
+                        Scope 1 Emissions(CO₂e)
                       </label>
                       <input
                         type="number"
@@ -210,7 +210,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Scope 2 Emissions(0 tons/year)
+                        Scope 2 Emissions(CO₂e)
                       </label>
                       <input
                         type="number"
@@ -224,7 +224,7 @@ export default function DataInputFlowForm() {
                         htmlFor=""
                         className="text-base leading-[26px] text-[#1C1C1E] mb-1.5"
                       >
-                        Scope 3 Emissions(0 tons/year)
+                        Scope 3 Emissions(CO₂e)
                       </label>
                       <input
                         type="number"
