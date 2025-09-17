@@ -4,13 +4,27 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { metricsApi } from "../helper/api";
+import { getTokensByUser, metricsApi } from "../helper/api";
 import { MetricsOverview } from "../types/api";
+import size from "lodash";
 
 export default function StatsCards() {
   const [metrics, setMetrics] = useState<MetricsOverview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tokenData, setTokenData] = useState<any>();
+  const [userId, setUserId] = useState<any>();
+  console.log(`userId`, userId);
+  console.log("Token data size:", tokenData);
+
+  useEffect(() => {
+    if (typeof window != undefined) {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        setUserId(stored);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -27,6 +41,23 @@ export default function StatsCards() {
 
     fetchMetrics();
   }, []);
+
+  useEffect(() => {
+    const fetchTokenCount = async () => {
+      try {
+        const data = await getTokensByUser(userId);
+        setTokenData(data.length);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch metrics");
+        console.error("Error fetching metrics:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (userId) {
+      fetchTokenCount();
+    }
+  }, [userId]);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "No data";
@@ -45,21 +76,29 @@ export default function StatsCards() {
   const stats = [
     {
       title: "Companies Verified",
-      value: isLoading ? "Loading..." : metrics ? formatNumber(metrics.companies_verified) : "0",
+      value: isLoading
+        ? "Loading..."
+        : metrics
+        ? formatNumber(metrics.companies_verified)
+        : "0",
       color: "bg_card_sky",
       text: "text-white",
       icon: "/icon/insurance.png",
     },
     {
       title: "Tokens Issued",
-      value: isLoading ? "Loading..." : metrics ? formatNumber(metrics.tokens_issued) : "0",
+      value: isLoading ? "Loading..." : metrics ? formatNumber(tokenData) : "0",
       color: "bg_card_purple",
       text: "text-white",
       icon: "/icon/blockchain.png",
     },
     {
       title: "Last Verification Date",
-      value: isLoading ? "Loading..." : metrics ? formatDate(metrics.last_verification_date) : "No data",
+      value: isLoading
+        ? "Loading..."
+        : metrics
+        ? formatDate(metrics.last_verification_date)
+        : "No data",
       color: "bg_card_red",
       text: "text-white",
       icon: "/icon/calendar.png",
