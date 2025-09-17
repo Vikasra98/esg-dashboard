@@ -431,10 +431,25 @@ export const submitFieldId = async (payload: FieldPayload) => {
   }
 };
 
-// Get tokens by company
+// Get tokens by user
 export const getTokensByUser = async (userId: string): Promise<any> => {
   try {
     const response = await api.get(`/v1/tokens/by-user/${userId}`);
+    return response.data;
+  } catch (error: any) {
+    const apiError: ApiError = {
+      message: extractErrorMessage(error, "Failed to fetch company tokens"),
+      details: error.response?.data,
+      status: error.response?.status || 500,
+    };
+    throw apiError;
+  }
+};
+
+// Get tokens by company
+export const getTokensByCompany = async (companyId: string): Promise<any> => {
+  try {
+    const response = await api.get(`/v1/tokens/by-company/${companyId}`);
     return response.data;
   } catch (error: any) {
     const apiError: ApiError = {

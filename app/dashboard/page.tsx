@@ -78,7 +78,7 @@ export default function Dashboard() {
         </AuthLayout>
       ) : isToken ? (
         <AuthLayout pageTitle={"Token List"} activeTitle="/dashboard">
-          <TokenList />
+          <TokenList companyId={selectedCompanyId} />
         </AuthLayout>
       ) : null}
     </ProtectedRoute>

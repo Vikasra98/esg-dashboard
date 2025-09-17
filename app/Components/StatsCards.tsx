@@ -87,7 +87,7 @@ export default function StatsCards() {
     },
     {
       title: "Tokens Issued",
-      value: isLoading ? "Loading..." : metrics ? formatNumber(tokenData) : "0",
+      value: isLoading ? "Loading..." : tokenData || 0,
       color: "bg_card_purple",
       text: "text-white",
       icon: "/icon/blockchain.png",

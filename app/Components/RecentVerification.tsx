@@ -230,7 +230,9 @@ export default function RecentVerification(props: IProps) {
                   <td className="p-3 py-6">{company.contact_name}</td>
                   <td className="p-3 py-6">
                     <button
-                      onClick={() => setIsToken(true)}
+                      onClick={() => {
+                        setIsToken(true), setSelectedCompanyId(company.id);
+                      }}
                       className="text-[#D99A70] hover:text-orange-400 cursor-pointer flex items-center"
                     >
                       <Eye size={16} /> <span className="ms-2">View</span>

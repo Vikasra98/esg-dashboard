@@ -22,6 +22,8 @@ import { IoMdEye } from "react-icons/io";
 import DeleteCompanyModal from "../Components/DeleteCompanyModal";
 import CompanyDashboard from "../Components/CompanyDashboard";
 import UpdateDataFlowModal from "../Components/UpdateDataFlowModal";
+import TokenList from "../Components/TokenList";
+import { Eye } from "lucide-react";
 
 export default function page() {
   const router = useRouter();
@@ -42,6 +44,9 @@ export default function page() {
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToken, setIsToken] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
+    null
+  );
 
   // Fetch companies on component mount and when filters change
   useEffect(() => {
@@ -143,7 +148,15 @@ export default function page() {
 
   return (
     <ProtectedRoute>
-      {!isDashboard ? (
+      {isToken ? (
+        <AuthLayout pageTitle={"Token List"} activeTitle="/dashboard">
+          <TokenList companyId={selectedCompanyId} />
+        </AuthLayout>
+      ) : isDashboard ? (
+        <AuthLayout pageTitle={"ESG Dashboard"} activeTitle="/list">
+          <CompanyDashboard />
+        </AuthLayout>
+      ) : (
         <AuthLayout pageTitle={"List of All"} activeTitle="/list">
           <main className="min-h-screen bg-[#123D2A] text-white rounded-xl border border-[#416455]">
             <div className="flex justify-between items-center px-[30px] pb-[22px] pt-[32px]">
@@ -264,7 +277,8 @@ export default function page() {
                         </span>
                       </div>
                     </th>
-                    <th className=" py-3"></th>
+                    <th className="p-3 text-left">View Tokens</th>
+                    <th className=" py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -336,6 +350,17 @@ export default function page() {
                         </td>
                         <td className="text-[10px] leading-3.5 font-medium py-6">
                           {company.contact_name}
+                        </td>
+                        <td className="p-3 py-6">
+                          <button
+                            onClick={() => {
+                              setIsToken(true),
+                                setSelectedCompanyId(company.id);
+                            }}
+                            className="text-[#D99A70] hover:text-orange-400 cursor-pointer flex items-center"
+                          >
+                            <Eye size={16} /> <span className="ms-2">View</span>
+                          </button>
                         </td>
                         <td className="text-[10px] leading-3.5 font-medium space-x-2 py-6 pr-[27px]">
                           <button
@@ -438,10 +463,6 @@ export default function page() {
               </div>
             </div>
           )}
-        </AuthLayout>
-      ) : (
-        <AuthLayout pageTitle={"ESG Dashboard"} activeTitle="/list">
-          <CompanyDashboard />
         </AuthLayout>
       )}
     </ProtectedRoute>
