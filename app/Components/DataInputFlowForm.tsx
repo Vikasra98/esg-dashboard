@@ -19,6 +19,7 @@ export default function DataInputFlowForm() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [doc_id, setDoc_id] = useState();
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   console.log(step, "step");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +63,7 @@ export default function DataInputFlowForm() {
   };
 
   const handleSave = async () => {
+    setIsLoading(true);
     try {
       const user = localStorage.getItem("user") || "VER-DEFAULT";
       const companyId = localStorage.getItem("companyId") || "COM-DEFAULT";
@@ -84,11 +86,12 @@ export default function DataInputFlowForm() {
 
       console.log("Submitting payload:", payload);
       await submitFieldData(payload);
-
+      setIsLoading(false);
       setIsCompleted(true);
     } catch (err) {
       console.error("Failed to submit:", err);
       alert("Failed to submit data. Check console for details.");
+      setIsLoading(false);
     }
   };
 
@@ -522,10 +525,15 @@ export default function DataInputFlowForm() {
               Cancel
             </button>
             <button
-              className="px-6 py-2 lg:py-[18px] lg:px-[80px] rounded-lg bg-[#1A3C34] text-white h-auto text-2xl leading-[34px] cursor-pointer font-semibold"
+              className={`px-6 py-2 lg:py-[18px] lg:px-[80px] rounded-lg h-auto text-2xl leading-[34px] cursor-pointer font-semibold ${
+                isLoading
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-[#12291E] text-[#F5F5F3] hover:bg-green-800"
+              }`}
               onClick={handleSave}
+              disabled={isLoading}
             >
-              Save
+              {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </div>

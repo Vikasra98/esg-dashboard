@@ -349,7 +349,10 @@ export default function page() {
                           >
                             <RiDeleteBin7Fill className="h-3 w-3" />
                           </button>
-                          <button className="text-[#D99A70] cursor-pointer">
+                          <button
+                            onClick={() => setIsDashboard(true)}
+                            className="text-[#D99A70] cursor-pointer"
+                          >
                             <IoMdEye className="h-3 w-3" />
                           </button>
                         </td>

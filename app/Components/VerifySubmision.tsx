@@ -8,6 +8,7 @@ import { submitFieldId } from "../helper/api";
 const VerifySubmision = () => {
   const [isVerify, setIsVerify] = useState(false);
   const [fieldData, setFieldData] = useState<any>();
+  const [isLoading, setIsLoading] = useState(false);
   console.log(fieldData);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ const VerifySubmision = () => {
   }, []);
 
   const handleSave = async () => {
+    setIsLoading(true);
     try {
       const field = localStorage.getItem("fieldId") || "COM-DEFAULT";
       const payload: any = {
@@ -28,9 +30,11 @@ const VerifySubmision = () => {
       await submitFieldId(payload);
 
       setIsVerify(true);
+      setIsLoading(false);
     } catch (err) {
       console.error("Failed to submit:", err);
       alert("Failed to submit data. Check console for details.");
+      setIsLoading(false);
     }
   };
   return (
@@ -57,10 +61,15 @@ const VerifySubmision = () => {
               <div className="w-full flex justify-center items-center">
                 <button
                   type="button"
-                  className="w-full lg:w-[521px] bg-[#12291E] text-[#F5F5F3] py-[18px] px-[30px] rounded-md hover:bg-green-800 transition text-2xl font-[600] cursor-pointer"
+                  disabled={isLoading}
+                  className={`w-full lg:w-[521px] py-[18px] px-[30px] rounded-md transition text-2xl font-[600] cursor-pointer ${
+                    isLoading
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      : "bg-[#12291E] text-[#F5F5F3] hover:bg-green-800"
+                  }`}
                   onClick={handleSave}
                 >
-                  Submit for Verification
+                  {isLoading ? "Submitting..." : "Submit for Verification"}
                 </button>
               </div>
             </div>

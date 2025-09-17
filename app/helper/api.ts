@@ -1,4 +1,4 @@
-// helper/api.ts
+// helper/v1.ts
 import axios from "axios";
 import {
   JoinRequest,
@@ -126,7 +126,7 @@ export const authApi = {
   ): Promise<AuthResponse | LoginResponse> => {
     try {
       // Use the internal API route (proxy) to avoid CORS issues
-      const response = await internalApi.post("/api/users/join", userData);
+      const response = await api.post("/v1/users/join", userData);
 
       // Handle different response formats
       if (response.data.access_token) {
@@ -158,7 +158,7 @@ export const authApi = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     try {
       // Use the internal API route (proxy) to avoid CORS issues
-      const response = await internalApi.post("/api/users/login", credentials);
+      const response = await api.post("/v1/users/login", credentials);
 
       // Store auth data if successful
       if (response.data.access_token) {
@@ -212,7 +212,7 @@ export const companyApi = {
     companyData: CreateCompanyRequest
   ): Promise<CompanyResponse> => {
     try {
-      const response = await internalApi.post("/api/companies", companyData);
+      const response = await api.post("/v1/companies", companyData);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = {
@@ -243,10 +243,10 @@ export const companyApi = {
 
       const queryString = queryParams.toString();
       const url = queryString
-        ? `/api/companies?${queryString}`
-        : "/api/companies";
+        ? `/v1/companies?${queryString}`
+        : "/v1/companies";
 
-      const response = await internalApi.get(url);
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = {
@@ -261,7 +261,7 @@ export const companyApi = {
   // Get company by ID
   getById: async (id: number): Promise<CompanyResponse> => {
     try {
-      const response = await internalApi.get(`/api/companies/${id}`);
+      const response = await api.get(`/v1/companies/${id}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = {
@@ -279,10 +279,7 @@ export const companyApi = {
     companyData: Partial<CreateCompanyRequest>
   ): Promise<CompanyResponse> => {
     try {
-      const response = await internalApi.put(
-        `/api/companies/${id}`,
-        companyData
-      );
+      const response = await api.put(`/v1/companies/${id}`, companyData);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = {
@@ -297,7 +294,7 @@ export const companyApi = {
   // Delete company
   delete: async (id: number): Promise<{ message: string }> => {
     try {
-      const response = await internalApi.delete(`/api/companies/${id}`);
+      const response = await api.delete(`/v1/companies/${id}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = {
@@ -315,7 +312,7 @@ export const metricsApi = {
   // Get metrics overview
   getOverview: async (): Promise<MetricsOverview> => {
     try {
-      const response = await internalApi.get("/api/metrics/overview");
+      const response = await api.get("/v1/metrics/overview");
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = {
@@ -336,15 +333,11 @@ export const uploadApi = {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await internalApi.post(
-        "/api/v1/uploads/sign",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await api.post("/v1/uploads/sign", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       return response.data;
     } catch (error: any) {
@@ -369,7 +362,7 @@ export const documentApi = {
     uploaded_by: string;
   }): Promise<any> => {
     try {
-      const response = await internalApi.post("/api/v1/documents", docData);
+      const response = await api.post("/v1/documents", docData);
 
       // Store documentId in localStorage
       if (response.data?.id) {
@@ -409,8 +402,8 @@ export interface ApiResponse<T> {
 // Submit field data
 export const submitFieldData = async (payload: FieldPayload) => {
   try {
-    const response: any = await internalApi.post<ApiResponse<FieldPayload>>(
-      "/api/v1/fields",
+    const response: any = await api.post<ApiResponse<FieldPayload>>(
+      "/v1/fields",
       payload
     );
     console.log(response, "response>>");
@@ -425,8 +418,8 @@ export const submitFieldData = async (payload: FieldPayload) => {
 
 export const submitFieldId = async (payload: FieldPayload) => {
   try {
-    const response: any = await internalApi.post<ApiResponse<FieldPayload>>(
-      "/api/v1/mint",
+    const response: any = await api.post<ApiResponse<FieldPayload>>(
+      "/v1/mint",
       payload
     );
     localStorage.setItem("mintResponse", JSON.stringify(response));

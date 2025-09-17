@@ -12,13 +12,24 @@ import {
   ReferenceLine,
 } from "recharts";
 
+interface IProps {
+  arcPosition: any;
+}
+
 // Sigmoid curve data
 const sigmoidData = Array.from({ length: 200 }, (_, i) => {
   const x = -10 + i * 0.1;
   return { x, y: 1 / (1 + Math.exp(-x)) };
 });
 
-export default function ArcCurveChart() {
+// inverse sigmoid (logit function)
+const logit = (y: number) => Math.log(y / (1 - y));
+
+export default function ArcCurveChart(props: IProps) {
+  const { arcPosition } = props;
+  // calculate corresponding x position
+  const xValue = logit(arcPosition);
+
   return (
     <motion.div
       className="rounded-2xl p-1.5 shadow-lg border border-[#416455] px-6 pt-[135px]"
@@ -60,9 +71,20 @@ export default function ArcCurveChart() {
               color: "#fff",
             }}
           />
-          {/* Reference lines as in screenshot */}
-          <ReferenceLine y={0.9} stroke="#FACC15" strokeDasharray="4 4" />
-          <ReferenceLine x={2.5} stroke="#FACC15" strokeDasharray="4 4" />
+
+          {/* Reference line for arc_position */}
+          <ReferenceLine
+            y={arcPosition}
+            stroke="#FACC15"
+            strokeDasharray="4 4"
+            label={{
+              value: `Arc Pos: ${arcPosition}`,
+              position: "right",
+              fill: "#FACC15",
+            }}
+          />
+          <ReferenceLine x={xValue} stroke="#FACC15" strokeDasharray="4 4" />
+
           <Line
             type="monotone"
             dataKey="y"
