@@ -201,7 +201,7 @@ export default function DataInputFlowForm() {
                       <input
                         type="number"
                         maxLength={80}
-                        placeholder="c"
+                        placeholder="0 tons/year"
                         className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] bg-white border-white`}
                       />
                     </div>
