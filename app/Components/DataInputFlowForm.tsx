@@ -29,17 +29,18 @@ export default function DataInputFlowForm() {
 
       try {
         setLoading(true);
-
+        const companyId = localStorage.getItem("companyId") || "COM-AWHF-BSPS";
+        const user = localStorage.getItem("user") || "VER-P8B9-A1YZ";
         // Step 1: Get signed URL
         const signedData = await uploadApi.signUpload(selectedFile);
 
         // Step 2: Create document record
         await documentApi.create({
-          company_id: "COM-AWHF-BSPS", // Replace with dynamic value if needed
+          company_id: companyId, // Replace with dynamic value if needed
           s3_uri: signedData.url,
           sha256: signedData.expected_sha256,
           filetype: "PDF",
-          uploaded_by: "VER-P8B9-A1YZ", // Replace with logged-in user
+          uploaded_by: user, // Replace with logged-in user
         });
 
         console.log("Document created & ID stored in localStorage ✅");

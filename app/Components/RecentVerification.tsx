@@ -19,10 +19,18 @@ interface IProps {
   setIsToken?: any;
   setIsDashboard?: any;
   setIsEdit?: any;
+  setSelectedCompanyId?: any;
+  selectedCompanyId?: any;
 }
 
 export default function RecentVerification(props: IProps) {
-  const { setIsToken, setIsDashboard, setIsEdit } = props;
+  const {
+    setIsToken,
+    setIsDashboard,
+    setIsEdit,
+    setSelectedCompanyId,
+    selectedCompanyId,
+  } = props;
   const router = useRouter();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -239,7 +247,10 @@ export default function RecentVerification(props: IProps) {
                   {/* Actions */}
                   <td className="p-3 py-6 flex gap-3">
                     <button
-                      onClick={() => setIsEdit(true)}
+                      onClick={() => {
+                        setSelectedCompanyId(company.id); // ✅ store ID
+                        setIsEdit(true);
+                      }}
                       className="text-[#D99A70] hover:text-orange-400 cursor-pointer"
                     >
                       <Pencil size={16} />

@@ -11,12 +11,16 @@ import RecentVerification from "../Components/RecentVerification";
 import UpdateDataFlowModal from "../Components/UpdateDataFlowModal";
 import CompanyDashboard from "../Components/CompanyDashboard";
 import TokenList from "../Components/TokenList";
+import VerifySubmision from "../Components/VerifySubmision";
 
 export default function Dashboard() {
   const [isEdit, setIsEdit] = useState(false);
   const [isDashboard, setIsDashboard] = useState(true); // default: dashboard screen
   const [isToken, setIsToken] = useState(false);
-
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
+    null
+  );
+  const [isCompleted, setIsCompleted] = useState(false);
   // helpers to switch views safely
   const showDashboard = () => {
     setIsDashboard(true);
@@ -35,7 +39,11 @@ export default function Dashboard() {
 
   return (
     <ProtectedRoute>
-      {isDashboard && !isToken && (
+      {isCompleted ? (
+        <AuthLayout pageTitle={"Verify Submission"} activeTitle="/dashboard">
+          <VerifySubmision />
+        </AuthLayout>
+      ) : isDashboard && !isToken ? (
         <AuthLayout pageTitle={"Dashboard"} activeTitle="/dashboard">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-[28px] leading-[38px] font-bold text-[#F5F5F3]">
@@ -54,22 +62,25 @@ export default function Dashboard() {
             setIsToken={showTokenList}
             setIsEdit={setIsEdit}
             setIsDashboard={showCompanyDashboard}
+            setSelectedCompanyId={setSelectedCompanyId}
+            selectedCompanyId={selectedCompanyId}
           />
-          <UpdateDataFlowModal isEdit={isEdit} setIsEdit={setIsEdit} />
+          <UpdateDataFlowModal
+            isEdit={isEdit}
+            setIsEdit={setIsEdit}
+            selectedCompanyId={selectedCompanyId}
+            setIsCompleted={setIsCompleted}
+          />
         </AuthLayout>
-      )}
-
-      {!isDashboard && !isToken && (
+      ) : !isDashboard && !isToken ? (
         <AuthLayout pageTitle={"ESG Dashboard"} activeTitle="/list">
           <CompanyDashboard />
         </AuthLayout>
-      )}
-
-      {isToken && (
+      ) : isToken ? (
         <AuthLayout pageTitle={"Token List"} activeTitle="/dashboard">
           <TokenList />
         </AuthLayout>
-      )}
+      ) : null}
     </ProtectedRoute>
   );
 }
