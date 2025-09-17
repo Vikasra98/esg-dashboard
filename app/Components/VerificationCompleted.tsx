@@ -7,6 +7,7 @@ import MatrixBarChart from "./MatrixBarChart";
 import ArcCurveChart from "./ArcCurveChart";
 import { formatDate } from "../helper/utils";
 import ScoreSigmoidChart from "./ScoreSigmoidChart";
+import _ from "lodash";
 
 const steps = ["Environment", "Social", "Governance"];
 
@@ -43,12 +44,35 @@ const VerificationCompleted = () => {
     }
   }, []);
 
+  // const tokenInfo: any = [
+  //   {
+  //     id: 1,
+  //     src: "/icon/token.png",
+  //     title: "BUDS Token ID",
+  //     value: budData?.length ? budData.join(", ") : "—",
+  //   },
+  //   {
+  //     id: 2,
+  //     src: "/icon/verifier.png",
+  //     title: "Verifier Attribution",
+  //     value: userInfo?.full_name || "—",
+  //   },
+  //   {
+  //     id: 3,
+  //     src: "/icon/timestamp.png",
+  //     title: "Timestamp",
+  //     value: mintInfo?.data?.timestamp
+  //       ? formatDate(mintInfo.data.timestamp)
+  //       : "—",
+  //   },
+  // ];
+
   const tokenInfo: any = [
     {
       id: 1,
       src: "/icon/token.png",
       title: "BUDS Token ID",
-      value: budData?.length ? budData.join(", ") : "—",
+      value: budData?.length ? budData : "—",
     },
     {
       id: 2,
@@ -128,7 +152,7 @@ const VerificationCompleted = () => {
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
               {tokenInfo.map((item: any, index: any) => (
                 <div
                   key={index}
@@ -147,6 +171,35 @@ const VerificationCompleted = () => {
                   <p className="text-xl lead[32px] font-normal text-nowrap">
                     {item.value} <br />
                   </p>
+                </div>
+              ))}
+            </div> */}
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+              {tokenInfo.map((item: any, index: number) => (
+                <div
+                  key={index}
+                  className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]"
+                >
+                  <Image
+                    src={item.src}
+                    alt={item.src}
+                    height={70}
+                    width={70}
+                    className="mb-4"
+                  />
+                  <h4 className="lg:text-[28px] leading-[38px] font-bold mb-2.5 text-nowrap">
+                    {item.title}
+                  </h4>
+
+                  {/* Always render values as array */}
+                  <div className="text-xl leading-[32px] font-normal text-center">
+                    {_.castArray(item.value).map((val: string, i: number) => (
+                      <p key={i} className="text-nowrap">
+                        {val}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
