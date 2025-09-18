@@ -13,6 +13,8 @@ import {
   MetricsOverview,
   ScoringRequest,
   ScoringResponse,
+  CompanyVerificationCount,
+  LastVerification,
 } from "../types/api";
 
 // Create axios instance
@@ -307,6 +309,43 @@ export const companyApi = {
       throw apiError;
     }
   },
+
+  // Get companies by email
+  getByEmail: async (email: string): Promise<CompanyVerificationCount[]> => {
+    try {
+      const encoded = encodeURIComponent(email);
+      const response = await api.get(`/v1/companies/by-email/${encoded}`);
+      return response.data as CompanyVerificationCount[];
+    } catch (error: any) {
+      const apiError: ApiError = {
+        message: extractErrorMessage(error, "Failed to fetch companies by email"),
+        details: error.response?.data,
+        status: error.response?.status || 500,
+      };
+      throw apiError;
+    }
+  },
+
+  // Get last verification date by email
+  getLastVerificationByEmail: async (
+    email: string
+  ): Promise<LastVerification> => {
+    try {
+      const encoded = encodeURIComponent(email);
+      const response = await api.get(
+        `/v1/companies/last-verification/by-email/${encoded}`
+      );
+      return response.data as LastVerification;
+    } catch (error: any) {
+      const apiError: ApiError = {
+        message: extractErrorMessage(error, "Failed to fetch last verification"),
+        details: error.response?.data,
+        status: error.response?.status || 500,
+      };
+      throw apiError;
+    }
+  },
+
 };
 
 // Metrics APIs
