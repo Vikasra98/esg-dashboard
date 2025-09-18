@@ -21,8 +21,7 @@ const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 const buildSigmoidData = (start = -10, end = 10, step = 0.1) => {
   const arr: { x: number; y: number }[] = [];
   for (let x = start; x <= end + 1e-9; x = +(x + step).toFixed(12)) {
-    const sigmoidValue = sigmoid(x) * 100; // scale to 0–100
-    arr.push({ x: +x.toFixed(3), y: +sigmoidValue.toFixed(3) });
+    arr.push({ x: +x.toFixed(3), y: +sigmoid(x).toFixed(3) });
   }
   return arr;
 };
@@ -142,7 +141,6 @@ export default function ScoreSigmoidChart({
               />
               <YAxis
                 type="number"
-                scale="linear"
                 domain={[0, 100]}
                 ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
                 tickCount={11}
@@ -156,7 +154,6 @@ export default function ScoreSigmoidChart({
                   fill: "#B5B5B5",
                 }}
               />
-
 
               <Tooltip
                 contentStyle={{
@@ -186,7 +183,7 @@ export default function ScoreSigmoidChart({
 
               <ReferenceDot
                 x={fixedX}
-                y={+(fixedYOnCurve * 100).toFixed(3)}
+                y={+fixedYOnCurve.toFixed(12)}
                 r={6}
                 stroke="#fff"
                 fill="#EF4444"
