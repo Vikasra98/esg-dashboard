@@ -4,8 +4,14 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { getTokensByUser, metricsApi, companyApi } from "../helper/api";
+import {
+  getTokensByUser,
+  metricsApi,
+  companyApi,
+  getBudScoreByUser,
+} from "../helper/api";
 import { MetricsOverview } from "../types/api";
+import { round } from "lodash";
 
 export default function StatsCards() {
   const [metrics, setMetrics] = useState<MetricsOverview | null>(null);
@@ -15,11 +21,14 @@ export default function StatsCards() {
   const [userId, setUserId] = useState<any>();
   const [companiesCount, setCompaniesCount] = useState<number | null>(null);
   const [companiesLoading, setCompaniesLoading] = useState(false);
-  const [lastVerification, setLastVerification] = useState<string | null | undefined>(undefined); // undefined = not loaded
+  const [lastVerification, setLastVerification] = useState<
+    string | null | undefined
+  >(undefined); // undefined = not loaded
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const raw = localStorage.getItem("user") || localStorage.getItem("userInfo");
+      const raw =
+        localStorage.getItem("user") || localStorage.getItem("userInfo");
       if (raw) {
         try {
           const parsed = JSON.parse(raw);
@@ -53,10 +62,22 @@ export default function StatsCards() {
 
   // tokens
   useEffect(() => {
-    const fetchTokenCount = async () => {
+    // const fetchTokenCount = async () => {
+    //   try {
+    //     const data = await getTokensByUser(userId);
+    //     setTokenData(data.length);
+    //   } catch (err: any) {
+    //     setError(err?.message || "Failed to fetch tokens");
+    //     console.error("Error fetching tokens:", err);
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
+    const fetchBudScore = async () => {
       try {
-        const data = await getTokensByUser(userId);
-        setTokenData(data.length);
+        const data = await getBudScoreByUser(userId);
+        setTokenData(data);
+        console.log(`data budssss`, data.total_bud_score);
       } catch (err: any) {
         setError(err?.message || "Failed to fetch tokens");
         console.error("Error fetching tokens:", err);
@@ -64,14 +85,18 @@ export default function StatsCards() {
         setIsLoading(false);
       }
     };
-    if (userId) fetchTokenCount();
+    if (userId) {
+      // fetchTokenCount();
+      fetchBudScore();
+    }
   }, [userId]);
 
   // companies by email (count)
   useEffect(() => {
     const fetchCompanies = async () => {
       if (typeof window === "undefined") return;
-      const raw = localStorage.getItem("userInfo") || localStorage.getItem("user");
+      const raw =
+        localStorage.getItem("userInfo") || localStorage.getItem("user");
       if (!raw) {
         setCompaniesCount(0);
         return;
@@ -80,7 +105,8 @@ export default function StatsCards() {
       let email: string | null = null;
       try {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object" && parsed.email) email = parsed.email;
+        if (parsed && typeof parsed === "object" && parsed.email)
+          email = parsed.email;
       } catch {
         // not JSON
       }
@@ -112,7 +138,8 @@ export default function StatsCards() {
   useEffect(() => {
     const fetchLastVerification = async () => {
       if (typeof window === "undefined") return;
-      const raw = localStorage.getItem("userInfo") || localStorage.getItem("user");
+      const raw =
+        localStorage.getItem("userInfo") || localStorage.getItem("user");
       if (!raw) {
         setLastVerification(null);
         return;
@@ -121,7 +148,8 @@ export default function StatsCards() {
       let email: string | null = null;
       try {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object" && parsed.email) email = parsed.email;
+        if (parsed && typeof parsed === "object" && parsed.email)
+          email = parsed.email;
       } catch {
         // not JSON
       }
@@ -161,21 +189,38 @@ export default function StatsCards() {
   const stats = [
     {
       title: "Companies Verified",
-      value: companiesLoading ? "Loading..." : companiesCount !== null ? formatNumber(companiesCount) : isLoading ? "Loading..." : metrics ? formatNumber(metrics.companies_verified) : "0",
+      value: companiesLoading
+        ? "Loading..."
+        : companiesCount !== null
+        ? formatNumber(companiesCount)
+        : isLoading
+        ? "Loading..."
+        : metrics
+        ? formatNumber(metrics.companies_verified)
+        : "0",
       color: "bg_card_sky",
       text: "text-white",
       icon: "/icon/insurance.png",
     },
     {
-      title: "Tokens Issued",
-      value: isLoading ? "Loading..." : tokenData || 0,
+      title: "Buds Issued",
+      value: isLoading
+        ? "Loading..."
+        : round(tokenData?.total_bud_score ?? 0, 2) || 0,
       color: "bg_card_purple",
       text: "text-white",
       icon: "/icon/blockchain.png",
     },
     {
       title: "Last Verification Date",
-      value: lastVerification === undefined ? (isLoading ? "Loading..." : metrics ? formatDate(metrics.last_verification_date) : "No data") : formatDate(lastVerification),
+      value:
+        lastVerification === undefined
+          ? isLoading
+            ? "Loading..."
+            : metrics
+            ? formatDate(metrics.last_verification_date)
+            : "No data"
+          : formatDate(lastVerification),
       color: "bg_card_red",
       text: "text-white",
       icon: "/icon/calendar.png",
@@ -199,8 +244,16 @@ export default function StatsCards() {
           style={{ boxShadow: "0px 4px 20px 0px #00000080" }}
         >
           <div>
-            <p className="text-[#F5F5F3] lg:text-xl font-bold text-sm">{stat.title}</p>
-            <h2 className={`text-2xl lg:text=[28px] lg:leading-[38px] font-bold mt-2 ${stat.text || "text-green-300"}`}>{stat.value}</h2>
+            <p className="text-[#F5F5F3] lg:text-xl font-bold text-sm">
+              {stat.title}
+            </p>
+            <h2
+              className={`text-2xl lg:text=[28px] lg:leading-[38px] font-bold mt-2 ${
+                stat.text || "text-green-300"
+              }`}
+            >
+              {stat.value}
+            </h2>
           </div>
           <div>
             <Image src={stat.icon} alt={stat.icon} height={60} width={60} />
