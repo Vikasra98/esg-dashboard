@@ -7,15 +7,17 @@ import MatrixBarChart from "./MatrixBarChart";
 import ArcCurveChart from "./ArcCurveChart";
 import { formatDate } from "../helper/utils";
 import ScoreSigmoidChart from "./ScoreSigmoidChart";
-import _ from "lodash";
+import _, { map } from "lodash";
 
 const steps = ["Environment", "Social", "Governance"];
 
 const VerificationCompleted = () => {
   const [step, setStep] = useState(0);
-  const [mintInfo, setMintInfo] = useState<any>();
+  // const [mintInfo, setMintInfo] = useState<any>();
   const [userInfo, setUserInfo] = useState<any>({});
   const [budData, setBudData] = useState<any>();
+  console.log(`budData`, budData);
+  console.log(`budData[0]?.timestamp`, budData?.[0]?.timestamp);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -28,21 +30,22 @@ const VerificationCompleted = () => {
   // console.log(`mintInfo`, mintInfo.data);
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedBuds = localStorage.getItem("buds_id");
+      const storedBuds: any = localStorage.getItem("buds_id");
+      // const budsIds = map(storedBuds, (token: any) => token.buds_id);
       if (storedBuds) {
         setBudData(JSON.parse(storedBuds));
       }
     }
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("mintResponse");
-      if (stored) {
-        setMintInfo(JSON.parse(stored));
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     const stored = localStorage.getItem("mintResponse");
+  //     if (stored) {
+  //       setMintInfo(JSON.parse(stored));
+  //     }
+  //   }
+  // }, []);
 
   // const tokenInfo: any = [
   //   {
@@ -67,32 +70,32 @@ const VerificationCompleted = () => {
   //   },
   // ];
 
-  const tokenInfo: any = [
-    {
-      id: 1,
-      src: "/icon/token.png",
-      title: "BUDS Token ID",
-      value: budData?.length ? budData : "—",
-    },
-    {
-      id: 2,
-      src: "/icon/verifier.png",
-      title: "Verifier Attribution",
-      value: userInfo?.full_name || "—",
-    },
-    {
-      id: 3,
-      src: "/icon/timestamp.png",
-      title: "Timestamp",
-      value: mintInfo?.data?.timestamp
-        ? formatDate(mintInfo.data.timestamp)
-        : "—",
-    },
-  ];
+  // const tokenInfo: any = [
+  //   {
+  //     id: 1,
+  //     src: "/icon/token.png",
+  //     title: "BUDS Token ID",
+  //     value: budData?.length ? budData : "—",
+  //   },
+  //   {
+  //     id: 2,
+  //     src: "/icon/verifier.png",
+  //     title: "Verifier Attribution",
+  //     value: userInfo?.full_name || "—",
+  //   },
+  //   {
+  //     id: 3,
+  //     src: "/icon/timestamp.png",
+  //     title: "Timestamp",
+  //     value: mintInfo?.data?.timestamp
+  //       ? formatDate(mintInfo.data.timestamp)
+  //       : "—",
+  //   },
+  // ];
 
-  if (!mintInfo?.data) {
-    return <p className="text-center py-8 text-[#D7A992]">Loading...</p>;
-  }
+  // if (budData) {
+  //   return <p className="text-center py-8 text-[#D7A992]">Loading...</p>;
+  // }
 
   return (
     <>
@@ -176,32 +179,65 @@ const VerificationCompleted = () => {
             </div> */}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-              {tokenInfo.map((item: any, index: number) => (
-                <div
-                  key={index}
-                  className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]"
-                >
-                  <Image
-                    src={item.src}
-                    alt={item.src}
-                    height={70}
-                    width={70}
-                    className="mb-4"
-                  />
-                  <h4 className="lg:text-[28px] leading-[38px] font-bold mb-2.5 text-nowrap">
-                    {item.title}
-                  </h4>
+              <div className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]">
+                <Image
+                  src={"/icon/token.png"}
+                  alt={"BUDS Token ID"}
+                  height={70}
+                  width={70}
+                  className="mb-4"
+                />
+                <h4 className="lg:text-[28px] leading-[38px] font-bold mb-2.5 text-nowrap">
+                  BUDS Token ID
+                </h4>
 
-                  {/* Always render values as array */}
-                  <div className="text-xl leading-[32px] font-normal text-center">
-                    {_.castArray(item.value).map((val: string, i: number) => (
-                      <p key={i} className="text-nowrap">
-                        {val}
-                      </p>
-                    ))}
-                  </div>
+                {/* Always render values as array */}
+                <div className="text-xl leading-[32px] font-normal text-center">
+                  {map(budData, (val, i) => (
+                    <p key={i} className="text-nowrap">
+                      {val.buds_id}
+                    </p>
+                  ))}
                 </div>
-              ))}
+              </div>
+              <div className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]">
+                <Image
+                  src={"/icon/verifier.png"}
+                  alt={"Verifier Attribution"}
+                  height={70}
+                  width={70}
+                  className="mb-4"
+                />
+                <h4 className="lg:text-[28px] leading-[38px] font-bold mb-2.5 text-nowrap">
+                  Verifier Attribution
+                </h4>
+
+                {/* Always render values as array */}
+                <div className="text-xl leading-[32px] font-normal text-center">
+                  <p className="text-nowrap">{userInfo?.full_name || "—"}</p>
+                </div>
+              </div>
+              <div className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]">
+                <Image
+                  src={"/icon/timestamp.png"}
+                  alt={"Timestamp"}
+                  height={70}
+                  width={70}
+                  className="mb-4"
+                />
+                <h4 className="lg:text-[28px] leading-[38px] font-bold mb-2.5 text-nowrap">
+                  Timestamp
+                </h4>
+
+                {/* Always render values as array */}
+                <div className="text-xl leading-[32px] font-normal text-center">
+                  <p className="text-nowrap">
+                    {budData?.[0]?.timestamp
+                      ? formatDate(budData?.[0]?.timestamp)
+                      : "—"}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[26px] bg-[#0A1912] text-white">
