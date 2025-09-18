@@ -161,3 +161,19 @@ export interface ScoringResponse {
   M?: number;
   [key: string]: any; // Allow for additional numeric keys
 }
+
+export type CompanyVerificationCount = {
+  id: string;               
+  name: string;
+  sector?: string;
+  country?: string;
+  reg_number?: string;
+  contact_name?: string;
+  contact_email?: string;
+  status?: string;
+  timestamp?: string;      
+};
+
+export interface LastVerification {
+  last_verification: string | null;
+}
