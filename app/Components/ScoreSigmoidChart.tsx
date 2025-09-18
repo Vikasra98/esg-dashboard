@@ -148,7 +148,7 @@ export default function ScoreSigmoidChart({
                 allowDecimals={false}
                 stroke="#B5B5B5"
                 label={{
-                  value: "Buds",
+                  value: "BUDS",
                   angle: -90,
                   position: "insideLeft",
                   fill: "#B5B5B5",
