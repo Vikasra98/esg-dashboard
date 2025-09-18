@@ -351,6 +351,26 @@ export const companyApi = {
       throw apiError;
     }
   },
+
+  // Update company status
+  updateCompanyStatus: async (
+    id: number,
+    status: string
+  ): Promise<CompanyResponse> => {
+    try {
+      const response = await api.put(
+        `/v1/companies/update-status/${id}?status=${status}`
+      );
+      return response.data;
+    } catch (error: any) {
+      const apiError: ApiError = {
+        message: extractErrorMessage(error, "Failed to update company"),
+        details: error.response?.data,
+        status: error.response?.status || 500,
+      };
+      throw apiError;
+    }
+  },
 };
 
 // Metrics APIs

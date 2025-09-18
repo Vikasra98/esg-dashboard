@@ -41,6 +41,7 @@ export default function RecentVerification(props: IProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
 
   // Fetch companies on component mount
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function RecentVerification(props: IProps) {
     };
 
     fetchCompanies();
-  }, []);
+  }, [isUpdate]);
 
   const toggleSelect = (companyId: number) => {
     setSelected((prev) =>
@@ -129,6 +130,17 @@ export default function RecentVerification(props: IProps) {
   const handleAddNew = () => {
     router.push("/create-company");
   };
+
+  const handleStatusChange = async (companyId: number, status: string) => {
+    try {
+      await companyApi.updateCompanyStatus(companyId, status);
+      setIsUpdate(true)
+      console.log("Status updated successfully");
+    } catch (error: any) {
+      setError(error.message || "Failed to update company status");
+      console.error("Error updating company status:", error);
+    }
+  }
 
   return (
     <motion.div
@@ -218,14 +230,25 @@ export default function RecentVerification(props: IProps) {
                   <td className="p-3 py-6">{company.sector}</td>
                   <td className="p-3 py-6">{company.country}</td>
                   <td className="p-3 py-6">
-                    <span
-                      className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        statusColors[company.status] ||
-                        "bg-gray-600/20 text-gray-400"
-                      }`}
+                    <select
+                      disabled={company.status === "Verified"}
+                      value={company.status}
+                      onChange={(e) => handleStatusChange(company.id, e.target.value)}
+                      className={`rounded-sm border-0 px-2 py-1 text-xs font-medium ${statusColors[company.status]}`}
                     >
-                      {company.status}
-                    </span>
+                      <option
+                        value="Pending"
+                        className={statusColors["Pending"]}
+                      >
+                        Pending
+                      </option>
+                      <option
+                        value="Verified"
+                        className={statusColors["Verified"]}
+                      >
+                        Verified
+                      </option>
+                    </select>
                   </td>
                   <td className="p-3 py-6">{company.contact_email}</td>
                   <td className="p-3 py-6">{company.contact_name}</td>
