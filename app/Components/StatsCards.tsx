@@ -94,8 +94,9 @@ export default function StatsCards() {
       // inside the useEffect that fetches companies by email
       try {
         const data = await companyApi.getByEmail(email);
+        const verifiedCount = data?.length > 0 ? data.filter(company => company?.status === "Verified") : [];
         // data is CompanyVerificationCount[] so simply use length
-        setCompaniesCount(Array.isArray(data) ? data.length : 0);
+        setCompaniesCount(verifiedCount?.length || 0);
       } catch (err: any) {
         console.error("Error getting companies by email:", err);
         setError(err?.message || "Failed to fetch companies");
@@ -167,7 +168,7 @@ export default function StatsCards() {
       icon: "/icon/insurance.png",
     },
     {
-      title: "Tokens Issued",
+      title: "BUDS Issued",
       value: isLoading ? "Loading..." : tokenData || 0,
       color: "bg_card_purple",
       text: "text-white",
