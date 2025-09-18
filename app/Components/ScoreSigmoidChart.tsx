@@ -21,7 +21,8 @@ const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 const buildSigmoidData = (start = -10, end = 10, step = 0.1) => {
   const arr: { x: number; y: number }[] = [];
   for (let x = start; x <= end + 1e-9; x = +(x + step).toFixed(12)) {
-    arr.push({ x: +x.toFixed(3), y: +sigmoid(x).toFixed(12) });
+    const sigmoidValue = sigmoid(x) * 100; // scale to 0–100
+    arr.push({ x: +x.toFixed(3), y: +sigmoidValue.toFixed(3) });
   }
   return arr;
 };
@@ -129,28 +130,33 @@ export default function ScoreSigmoidChart({
               <XAxis
                 dataKey="x"
                 type="number"
-                domain={[-10, 10]}
-                ticks={[-10, -7.5, -5, -2.5, 0, 2.5, 5, 7.5, 10]}
+                domain={[0, 100]}
+                ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
                 stroke="#B5B5B5"
                 label={{
-                  value: "Field Value",
+                  value: "Compound matrix value",
                   position: "insideBottom",
-                  dy: 10,
+                  dy: 25,
                   fill: "#B5B5B5",
                 }}
               />
               <YAxis
-                dataKey="y"
-                domain={[0, 1]}
-                ticks={[0, 0.2, 0.4, 0.6, 0.8, 1]}
+                type="number"
+                scale="linear"
+                domain={[0, 100]}
+                ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                tickCount={11}
+                interval={0}
+                allowDecimals={false}
                 stroke="#B5B5B5"
                 label={{
-                  value: "Verified Score",
+                  value: "Buds",
                   angle: -90,
                   position: "insideLeft",
                   fill: "#B5B5B5",
                 }}
               />
+
 
               <Tooltip
                 contentStyle={{
@@ -180,7 +186,7 @@ export default function ScoreSigmoidChart({
 
               <ReferenceDot
                 x={fixedX}
-                y={+fixedYOnCurve.toFixed(12)}
+                y={+(fixedYOnCurve * 100).toFixed(3)}
                 r={6}
                 stroke="#fff"
                 fill="#EF4444"
