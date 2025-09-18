@@ -87,7 +87,7 @@ export default function StatsCards() {
 
       if (!email) {
         setCompaniesCount(0);
-        return;''
+        return;
       }
 
       setCompaniesLoading(true);
