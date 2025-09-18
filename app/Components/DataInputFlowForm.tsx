@@ -71,6 +71,8 @@ export default function DataInputFlowForm() {
       const documentId = localStorage.getItem("documentId") || "DOC-DEFAULT";
 
       // Example for Renewable Energy Used
+      const scope1Value = formData["scope1Value"] || 0;
+      const scope2Value = formData["scope2Value"] || 0;
       const renewableEnergyUsed = formData["renewableEnergyUsed"] || 0;
 
       // Common fields
@@ -80,7 +82,6 @@ export default function DataInputFlowForm() {
         period_end: "2025-01-31T23:59:59Z",
         document_id: documentId,
         submitted_by: user,
-        raw_value: renewableEnergyUsed,
         unit: "kgCO2e",
         status: "pending",
       };
@@ -89,14 +90,17 @@ export default function DataInputFlowForm() {
       const payload = [
         {
           ...commonFields,
+          raw_value: scope1Value,
           template_id: "ENV.SCOPE1.TCO2E",
         },
         {
           ...commonFields,
+          raw_value: scope2Value,
           template_id: "ENV.SCOPE2.TCO2E",
         },
         {
           ...commonFields,
+          raw_value: renewableEnergyUsed,
           template_id: "ENV.RENEWABLE_ENERGY.USE",
         },
       ];
@@ -202,6 +206,10 @@ export default function DataInputFlowForm() {
                         type="number"
                         maxLength={80}
                         placeholder="0 tons/year"
+                        value={formData["scope1Value"] || ""}
+                        onChange={(e) =>
+                          handleInputChange("scope1Value", e.target.value)
+                        }
                         className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] bg-white border-white`}
                       />
                     </div>
@@ -216,6 +224,10 @@ export default function DataInputFlowForm() {
                         type="number"
                         maxLength={80}
                         placeholder="0 tons/year"
+                        value={formData["scope2Value"] || ""}
+                        onChange={(e) =>
+                          handleInputChange("scope2Value", e.target.value)
+                        }
                         className={`w-full px-[30px] py-3.5 border-1 rounded-[10px] outline-none  placeholder:text-[#607D70] placeholder:text-base text-base text-[#607D70] bg-white border-white`}
                       />
                     </div>

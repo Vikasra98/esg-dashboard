@@ -318,7 +318,10 @@ export const companyApi = {
       return response.data as CompanyVerificationCount[];
     } catch (error: any) {
       const apiError: ApiError = {
-        message: extractErrorMessage(error, "Failed to fetch companies by email"),
+        message: extractErrorMessage(
+          error,
+          "Failed to fetch companies by email"
+        ),
         details: error.response?.data,
         status: error.response?.status || 500,
       };
@@ -338,14 +341,16 @@ export const companyApi = {
       return response.data as LastVerification;
     } catch (error: any) {
       const apiError: ApiError = {
-        message: extractErrorMessage(error, "Failed to fetch last verification"),
+        message: extractErrorMessage(
+          error,
+          "Failed to fetch last verification"
+        ),
         details: error.response?.data,
         status: error.response?.status || 500,
       };
       throw apiError;
     }
   },
-
 };
 
 // Metrics APIs
@@ -450,7 +455,7 @@ export const submitFieldData = async (payload: any) => {
     console.log(response, "response>>");
 
     localStorage.setItem("fieldId", response.data.id);
-    localStorage.setItem("buds_id", JSON.stringify(response.data.buds_ids));
+    localStorage.setItem("buds_id", JSON.stringify(response.data.tokens));
     return response.data;
   } catch (error: any) {
     console.error("Error submitting field data:", error);
