@@ -352,7 +352,7 @@ export const companyApi = {
     }
   },
 
-  // Update company status
+  // Update company status verification
   updateCompanyStatus: async (
     id: number,
     status: string
