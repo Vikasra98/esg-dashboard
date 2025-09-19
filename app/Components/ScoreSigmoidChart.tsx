@@ -15,13 +15,13 @@ import {
 import { scoringApi } from "../helper/api";
 import { ScoringRequest, ScoringResponse } from "../types/api";
 
-const sigmoid = (x: number) => 100 / (1 + Math.exp(-x));
+const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 
-// build fine-grained x -> y data for a smooth curve
-const buildSigmoidData = (start = -10, end = 10, step = 10) => {
+const buildSigmoidData = (start = 0, end = 10, step = 0.1) => {
   const arr: { x: number; y: number }[] = [];
   for (let x = start; x <= end + 1e-9; x = +(x + step).toFixed(12)) {
-    arr.push({ x: +x.toFixed(3), y: +sigmoid(x).toFixed(3) });
+    const sigmoidInput = x * 2 - 10;
+    arr.push({ x: +x.toFixed(3), y: +(sigmoid(sigmoidInput) * 100).toFixed(12) });
   }
   return arr;
 };
@@ -83,23 +83,26 @@ export default function ScoreSigmoidChart({
         setResp(response);
       } catch (err: any) {
         console.error("Scoring API error:", err);
-        setError(err.message || "Failed to calculate scoring");
+        setError(err?.message || "Failed to calculate scoring");
       } finally {
         setLoading(false);
       }
     }
 
     fetchScore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(payload)]);
 
-  const data = useMemo(() => buildSigmoidData(0, 100, 10), []);
+  const data = useMemo(() => {
+    const d = buildSigmoidData(0, 10, 0.1);
+    return d.sort((a, b) => a.x - b.x);
+  }, []);
 
-  const fixedX = useMemo(() => {
-    return resp?.parameters?.M ?? resp?.M ?? payload.M;
-  }, [resp]);
+  const fixedXRaw = resp?.parameters?.M ?? resp?.M ?? payload.M;
+  const fixedX = Math.min(10, Math.max(0, Number(fixedXRaw ?? payload.M)));
 
-  const fixedYFromResp = resp?.V ?? payload.V;
-  const fixedYOnCurve = sigmoid(fixedX);
+  const curveYAtFixedX = sigmoid(fixedX * 2 - 10) * 100;
+  const curveDotY = +curveYAtFixedX.toFixed(12);
 
   return (
     <div className="rounded-2xl p-1.5 shadow-lg border border-[#416455] px-6 pt-[135px]">
@@ -121,82 +124,47 @@ export default function ScoreSigmoidChart({
       {!loading && !error && (
         <div style={{ width: "100%", height }}>
           <ResponsiveContainer width="100%" height={330}>
-            <LineChart
-              data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-            >
+            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
               <CartesianGrid stroke="#444" strokeDasharray="3 3" />
+
               <XAxis
                 dataKey="x"
                 type="number"
-                domain={[0, 100]}
-                ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                domain={[0, 10]}
+                ticks={[0, 2.5, 5, 7.5, 10]}
+                allowDataOverflow={false}
+                scale="linear"
                 stroke="#B5B5B5"
-                label={{
-                  value: "Compound matrix value",
-                  position: "insideBottom",
-                  dy: 25,
-                  fill: "#B5B5B5",
-                }}
+                label={{ value: "Compound matrix value", position: "insideBottom", dy: 25, fill: "#B5B5B5" }}
               />
+
               <YAxis
-                type="number"
+                dataKey="y"
                 domain={[0, 100]}
-                ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-                tickCount={11}
-                interval={0}
-                allowDecimals={false}
+                ticks={[0, 20, 40, 60, 80, 100]}
+                allowDataOverflow={false}
                 stroke="#B5B5B5"
-                label={{
-                  value: "BUDS",
-                  angle: -90,
-                  position: "insideLeft",
-                  fill: "#B5B5B5",
-                }}
+                label={{ value: "BUDS", angle: -90, position: "insideLeft", fill: "#B5B5B5" }}
               />
 
               <Tooltip
-                contentStyle={{
-                  backgroundColor: "#0D2017",
-                  borderRadius: 8,
-                  border: "1px solid #333",
-                  color: "#fff",
-                }}
+                contentStyle={{ backgroundColor: "#0D2017", borderRadius: 8, border: "1px solid #333", color: "#fff" }}
                 cursor={false}
+                formatter={(value: any) => (typeof value === "number" ? `${+value.toFixed(2)}%` : value)}
               />
 
-              <ReferenceLine
-                x={fixedX}
-                stroke="#FACC15"
-                strokeDasharray="4 4"
-              />
+              <ReferenceLine x={fixedX} stroke="#FACC15" strokeDasharray="4 4" />
 
-              <Line
-                type="monotone"
-                dataKey="y"
-                stroke="#EF4444"
-                strokeWidth={2}
-                dot={false}
-                activeDot={false}
-                isAnimationActive={false}
-              />
+              <Line type="monotone" dataKey="y" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={false} isAnimationActive={false} />
 
-              <ReferenceDot
-                x={fixedX}
-                y={+fixedYOnCurve.toFixed(12)}
-                r={6}
-                stroke="#fff"
-                fill="#EF4444"
-              />
+              <ReferenceDot x={fixedX} y={curveDotY} r={6} stroke="#fff" fill="#EF4444" />
             </LineChart>
           </ResponsiveContainer>
         </div>
       )}
 
       <div className="text-center">
-        <h2 className="text-white text-3xl font-semibold">
-          Arc™ Curve Placement
-        </h2>
+        <h2 className="text-white text-3xl font-semibold">Arc™ Curve Placement</h2>
       </div>
     </div>
   );
