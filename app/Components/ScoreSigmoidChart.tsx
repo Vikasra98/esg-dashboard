@@ -15,10 +15,10 @@ import {
 import { scoringApi } from "../helper/api";
 import { ScoringRequest, ScoringResponse } from "../types/api";
 
-const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
+const sigmoid = (x: number) => 100 / (1 + Math.exp(-x));
 
 // build fine-grained x -> y data for a smooth curve
-const buildSigmoidData = (start = -10, end = 10, step = 0.1) => {
+const buildSigmoidData = (start = -10, end = 10, step = 10) => {
   const arr: { x: number; y: number }[] = [];
   for (let x = start; x <= end + 1e-9; x = +(x + step).toFixed(12)) {
     arr.push({ x: +x.toFixed(3), y: +sigmoid(x).toFixed(3) });
@@ -92,7 +92,7 @@ export default function ScoreSigmoidChart({
     fetchScore();
   }, [JSON.stringify(payload)]);
 
-  const data = useMemo(() => buildSigmoidData(-10, 10, 0.1), []);
+  const data = useMemo(() => buildSigmoidData(0, 100, 10), []);
 
   const fixedX = useMemo(() => {
     return resp?.parameters?.M ?? resp?.M ?? payload.M;

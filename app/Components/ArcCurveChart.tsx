@@ -27,6 +27,7 @@ const logit = (y: number) => Math.log(y / (1 - y));
 
 export default function ArcCurveChart(props: IProps) {
   const { arcPosition } = props;
+  console.log(`arcPosition`, arcPosition);
   // calculate corresponding x position
   const xValue = logit(arcPosition);
 
