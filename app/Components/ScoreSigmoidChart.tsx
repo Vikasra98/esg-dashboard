@@ -17,15 +17,11 @@ import { ScoringRequest, ScoringResponse } from "../types/api";
 
 const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 
-// Build sigmoid on -10..10 (original domain), but map values for plotting:
-// plotted x (0..10) = (x_original + 10) / 2
-// plotted y (0..100) = sigmoid(x_original) * 100
-const buildSigmoidData = (start = -10, end = 10, step = 0.1) => {
+const buildSigmoidData = (center: number, start = 0, end = 10, step = 0.1) => {
   const arr: { x: number; y: number }[] = [];
   for (let x = start; x <= end + 1e-9; x = +(x + step).toFixed(12)) {
-    const y = sigmoid(x);
-    const xPlot = (x + 10) / 2; // map -10..10 -> 0..10
-    arr.push({ x: +xPlot.toFixed(3), y: +(y * 100).toFixed(6) });
+    const sigmoidInput = (x - center) * 2;
+    arr.push({ x: +x.toFixed(3), y: +(sigmoid(sigmoidInput) * 100).toFixed(12) });
   }
   return arr;
 };
@@ -34,22 +30,23 @@ interface ScoreSigmoidChartProps {
   scoringData?: Partial<ScoringRequest>;
   title?: string;
   height?: number;
+  centerOverride?: number;
 }
 
 export default function ScoreSigmoidChart({
   scoringData,
   title = "Arc™ Curve Placement (Sigmoid)",
   height = 360,
+  centerOverride,
 }: ScoreSigmoidChartProps) {
   const [resp, setResp] = useState<ScoringResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Default payload (M is in original domain -10..10 as before)
   const defaultPayload: ScoringRequest = {
     name: "MVP",
     V: 0.6,
-    M: 5,
+    M: 3.75,
     R_factor: 1.25,
     Sigma: 0.9,
     Theta: 1,
@@ -94,23 +91,22 @@ export default function ScoreSigmoidChart({
     }
 
     fetchScore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(payload)]);
 
-  // data: same sigmoid shape but x mapped to 0..10 and y scaled to 0..100
-  const data = useMemo(() => buildSigmoidData(-10, 10, 0.1), []);
+  const centerRaw = centerOverride ?? resp?.parameters?.M ?? resp?.M ?? payload.M ?? 3.75;
+  const center = Math.min(10, Math.max(0, Number(centerRaw)));
 
-  // fixedX originally is in the same domain as the sigmoid input (e.g. 5)
-  // Map it to plotted domain: xPlot = (fixedX + 10) / 2
-  const fixedXOriginal = resp?.parameters?.M ?? resp?.M ?? payload.M;
-  const fixedXPlot = typeof fixedXOriginal === "number"
-    ? +(((fixedXOriginal + 10) / 2)).toFixed(6)
-    : +(((payload.M + 10) / 2)).toFixed(6);
+  const data = useMemo(() => {
+    const d = buildSigmoidData(center, 0, 10, 0.1);
+    return d.sort((a, b) => a.x - b.x);
+  }, [center]);
 
-  // fixedY on curve: compute sigmoid(originalFixedX) then scale to 0..100
-  const fixedYOnCurve =
-    typeof fixedXOriginal === "number"
-      ? +(sigmoid(fixedXOriginal) * 100).toFixed(6)
-      : +(sigmoid(payload.M) * 100).toFixed(6);
+  const curveYAtCenter = sigmoid((center - center) * 2) * 100; // = 50
+  const curveDotY = +curveYAtCenter.toFixed(12);
+
+  const dotX = center;
+  const dotY = curveDotY;
 
   return (
     <div className="rounded-2xl p-1.5 shadow-lg border border-[#416455] px-6 pt-[135px]">
@@ -143,12 +139,7 @@ export default function ScoreSigmoidChart({
                 allowDataOverflow={false}
                 scale="linear"
                 stroke="#B5B5B5"
-                label={{
-                  value: "Compound matrix value",
-                  position: "insideBottom",
-                  dy: 25,
-                  fill: "#B5B5B5",
-                }}
+                label={{ value: "Compound matrix value", position: "insideBottom", dy: 25, fill: "#B5B5B5" }}
               />
 
               <YAxis
@@ -157,53 +148,20 @@ export default function ScoreSigmoidChart({
                 ticks={[0, 20, 40, 60, 80, 100]}
                 allowDataOverflow={false}
                 stroke="#B5B5B5"
-                label={{
-                  value: "BUDS",
-                  angle: -90,
-                  position: "insideLeft",
-                  fill: "#B5B5B5",
-                }}
+                label={{ value: "BUDS", angle: -90, position: "insideLeft", fill: "#B5B5B5" }}
               />
 
               <Tooltip
-                contentStyle={{
-                  backgroundColor: "#0D2017",
-                  borderRadius: 8,
-                  border: "1px solid #333",
-                  color: "#fff",
-                }}
+                contentStyle={{ backgroundColor: "#0D2017", borderRadius: 8, border: "1px solid #333", color: "#fff" }}
                 cursor={false}
-                formatter={(value: any) => {
-                  // format tooltip y as percent-like value
-                  if (typeof value === "number") {
-                    return `${+value.toFixed(2)}%`;
-                  }
-                  return value;
-                }}
+                formatter={(value: any) => (typeof value === "number" ? `${+value.toFixed(2)}%` : value)}
               />
 
-              {/* ReferenceLine uses plotted X */}
-              <ReferenceLine x={fixedXPlot} stroke="#FACC15" strokeDasharray="4 4" />
+              <ReferenceLine x={center} stroke="#FACC15" strokeDasharray="4 4" />
 
-              {/* Sigmoid curve (plotted with mapped x and scaled y) */}
-              <Line
-                type="monotone"
-                dataKey="y"
-                stroke="#EF4444"
-                strokeWidth={2}
-                dot={false}
-                activeDot={false}
-                isAnimationActive={false}
-              />
+              <Line type="monotone" dataKey="y" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={false} isAnimationActive={false} />
 
-              {/* Dot placed on the curve: plotted x and scaled y */}
-              <ReferenceDot
-                x={fixedXPlot}
-                y={fixedYOnCurve}
-                r={6}
-                stroke="#fff"
-                fill="#EF4444"
-              />
+              <ReferenceDot x={dotX} y={dotY} r={6} stroke="#fff" fill="#EF4444" />
             </LineChart>
           </ResponsiveContainer>
         </div>
