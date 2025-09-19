@@ -48,11 +48,18 @@ export default function RecentVerification(props: IProps) {
     const fetchCompanies = async () => {
       setIsLoading(true);
       setError("");
+       const raw = localStorage.getItem("userInfo") || localStorage.getItem("user");
+      let email: string | null = null;
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && parsed.email)
+          email = parsed.email;
+      } catch {
+        // not JSON
+      }
 
       try {
-        const response = await companyApi.getAll({
-          limit: 10, // Show only 10 recent companies on dashboard
-        });
+        const response = await companyApi.getByEmail(email);
 
         // Handle different response structures
         if (Array.isArray(response)) {
