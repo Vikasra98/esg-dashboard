@@ -48,8 +48,9 @@ export default function RecentVerification(props: IProps) {
     const fetchCompanies = async () => {
       setIsLoading(true);
       setError("");
-       const raw = localStorage.getItem("userInfo") || localStorage.getItem("user");
-      let email: string | null = null;
+      const raw: any =
+        localStorage.getItem("userInfo") || localStorage.getItem("user");
+      let email: any = null;
       try {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object" && parsed.email)
@@ -59,7 +60,7 @@ export default function RecentVerification(props: IProps) {
       }
 
       try {
-        const response = await companyApi.getByEmail(email);
+        const response: any = await companyApi.getByEmail(email);
 
         // Handle different response structures
         if (Array.isArray(response)) {
@@ -141,13 +142,13 @@ export default function RecentVerification(props: IProps) {
   const handleStatusChange = async (companyId: number, status: string) => {
     try {
       await companyApi.updateCompanyStatus(companyId, status);
-      setIsUpdate(true)
+      setIsUpdate(true);
       console.log("Status updated successfully");
     } catch (error: any) {
       setError(error.message || "Failed to update company status");
       console.error("Error updating company status:", error);
     }
-  }
+  };
 
   return (
     <motion.div
@@ -240,8 +241,12 @@ export default function RecentVerification(props: IProps) {
                     <select
                       disabled={company.status === "Verified"}
                       value={company.status}
-                      onChange={(e) => handleStatusChange(company.id, e.target.value)}
-                      className={`rounded-sm border-0 px-2 py-1 text-xs font-medium ${statusColors[company.status]}`}
+                      onChange={(e) =>
+                        handleStatusChange(company.id, e.target.value)
+                      }
+                      className={`rounded-sm border-0 px-2 py-1 text-xs font-medium ${
+                        statusColors[company.status]
+                      }`}
                     >
                       <option
                         value="Pending"
