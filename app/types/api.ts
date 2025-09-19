@@ -69,6 +69,7 @@ export interface CreateCompanyRequest {
   contact_name: string;
   contact_email: string;
   status: "Pending" | "Verified" | "Active" | "Rejected";
+  created_by: string;
 }
 
 export interface Company {

@@ -32,6 +32,11 @@ const CompanyProfile = () => {
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     setErrorMessage("");
+    const raw: any = localStorage.getItem("userInfo");
+    let email: any = null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && parsed.email) email = parsed.email;
+
 
     try {
       const companyData: CreateCompanyRequest = {
@@ -42,6 +47,7 @@ const CompanyProfile = () => {
         contact_name: data.contact_name,
         contact_email: data.contact_email,
         status: "Pending",
+        created_by: email,
       };
 
       const response: any = await companyApi.create(companyData);
@@ -207,11 +213,10 @@ const CompanyProfile = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full lg:w-[521px] py-5 px-[30px] rounded-md transition text-2xl font-[600] cursor-pointer ${
-                  isLoading
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    : "bg-[#12291E] text-[#F5F5F3] hover:bg-green-800"
-                }`}
+                className={`w-full lg:w-[521px] py-5 px-[30px] rounded-md transition text-2xl font-[600] cursor-pointer ${isLoading
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-[#12291E] text-[#F5F5F3] hover:bg-green-800"
+                  }`}
               >
                 {isLoading ? "Creating Company..." : "Create Company"}
               </button>
