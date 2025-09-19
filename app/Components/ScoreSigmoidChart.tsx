@@ -17,10 +17,10 @@ import { ScoringRequest, ScoringResponse } from "../types/api";
 
 const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 
-const buildSigmoidData = (start = 0, end = 10, step = 0.1) => {
+const buildSigmoidData = (center: number, start = 0, end = 10, step = 0.1) => {
   const arr: { x: number; y: number }[] = [];
   for (let x = start; x <= end + 1e-9; x = +(x + step).toFixed(12)) {
-    const sigmoidInput = x * 2 - 10;
+    const sigmoidInput = (x - center) * 2;
     arr.push({ x: +x.toFixed(3), y: +(sigmoid(sigmoidInput) * 100).toFixed(12) });
   }
   return arr;
@@ -30,22 +30,23 @@ interface ScoreSigmoidChartProps {
   scoringData?: Partial<ScoringRequest>;
   title?: string;
   height?: number;
+  centerOverride?: number;
 }
 
 export default function ScoreSigmoidChart({
   scoringData,
   title = "Arc™ Curve Placement (Sigmoid)",
   height = 360,
+  centerOverride,
 }: ScoreSigmoidChartProps) {
   const [resp, setResp] = useState<ScoringResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Default payload with ability to override via props
   const defaultPayload: ScoringRequest = {
     name: "MVP",
     V: 0.6,
-    M: 5,
+    M: 3.75,
     R_factor: 1.25,
     Sigma: 0.9,
     Theta: 1,
@@ -93,16 +94,19 @@ export default function ScoreSigmoidChart({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(payload)]);
 
+  const centerRaw = centerOverride ?? resp?.parameters?.M ?? resp?.M ?? payload.M ?? 3.75;
+  const center = Math.min(10, Math.max(0, Number(centerRaw)));
+
   const data = useMemo(() => {
-    const d = buildSigmoidData(0, 10, 0.1);
+    const d = buildSigmoidData(center, 0, 10, 0.1);
     return d.sort((a, b) => a.x - b.x);
-  }, []);
+  }, [center]);
 
-  const fixedXRaw = resp?.parameters?.M ?? resp?.M ?? payload.M;
-  const fixedX = Math.min(10, Math.max(0, Number(fixedXRaw ?? payload.M)));
+  const curveYAtCenter = sigmoid((center - center) * 2) * 100; // = 50
+  const curveDotY = +curveYAtCenter.toFixed(12);
 
-  const curveYAtFixedX = sigmoid(fixedX * 2 - 10) * 100;
-  const curveDotY = +curveYAtFixedX.toFixed(12);
+  const dotX = center;
+  const dotY = curveDotY;
 
   return (
     <div className="rounded-2xl p-1.5 shadow-lg border border-[#416455] px-6 pt-[135px]">
@@ -153,11 +157,11 @@ export default function ScoreSigmoidChart({
                 formatter={(value: any) => (typeof value === "number" ? `${+value.toFixed(2)}%` : value)}
               />
 
-              <ReferenceLine x={fixedX} stroke="#FACC15" strokeDasharray="4 4" />
+              <ReferenceLine x={center} stroke="#FACC15" strokeDasharray="4 4" />
 
               <Line type="monotone" dataKey="y" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={false} isAnimationActive={false} />
 
-              <ReferenceDot x={fixedX} y={curveDotY} r={6} stroke="#fff" fill="#EF4444" />
+              <ReferenceDot x={dotX} y={dotY} r={6} stroke="#fff" fill="#EF4444" />
             </LineChart>
           </ResponsiveContainer>
         </div>
