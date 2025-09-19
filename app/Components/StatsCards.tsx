@@ -207,7 +207,7 @@ export default function StatsCards() {
       icon: "/icon/insurance.png",
     },
     {
-      title: "Buds Issued",
+      title: "BUDS Issued",
       value: isLoading
         ? "Loading..."
         : round(tokenData?.total_bud_score ?? 0, 2) || 0,

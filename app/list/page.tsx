@@ -48,12 +48,30 @@ export default function page() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
     null
   );
+  const [isUpdate, setIsUpdate] = useState(false);
+  const statusColors: Record<string, string> = {
+    Verified: "bg-green-600/20 text-green-400",
+    Pending: "bg-yellow-600/20 text-yellow-400",
+    Active: "bg-blue-600/20 text-blue-400",
+    Rejected: "bg-red-600/20 text-red-400",
+  };
+
 
   // Fetch companies on component mount and when filters change
   useEffect(() => {
     const fetchCompanies = async () => {
       setIsLoading(true);
       setError("");
+      const raw: any =
+        localStorage.getItem("userInfo") || localStorage.getItem("user");
+      let email: any = null;
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && parsed.email)
+          email = parsed.email;
+      } catch {
+        // not JSON
+      }
 
       try {
         const params = {
@@ -62,7 +80,7 @@ export default function page() {
           limit: 20,
         };
 
-        const response = await companyApi.getAll(params);
+        const response: any = await companyApi.getByEmail(email);
 
         // Handle different response structures
         if (Array.isArray(response)) {
@@ -96,7 +114,7 @@ export default function page() {
     };
 
     fetchCompanies();
-  }, [currentPage, statusFilter]);
+  }, [currentPage, statusFilter, isUpdate]);
 
   const toggleSelect = (companyId: number) => {
     setSelected((prev) =>
@@ -147,6 +165,17 @@ export default function page() {
     router.push("/create-company");
   };
 
+  const handleStatusChange = async (companyId: number, status: string) => {
+    try {
+      await companyApi.updateCompanyStatus(companyId, status);
+      setIsUpdate(true);
+      console.log("Status updated successfully");
+    } catch (error: any) {
+      setError(error.message || "Failed to update company status");
+      console.error("Error updating company status:", error);
+    }
+  };
+
   return (
     <ProtectedRoute>
       {isToken ? (
@@ -168,9 +197,9 @@ export default function page() {
                     {isLoading
                       ? "Loading..."
                       : `${(currentPage - 1) * 20 + 1}-${Math.min(
-                          currentPage * 20,
-                          totalCount
-                        )}`}
+                        currentPage * 20,
+                        totalCount
+                      )}`}
                   </span>{" "}
                   of {totalCount}
                 </p>
@@ -331,20 +360,29 @@ export default function page() {
                         <td className="text-[10px] leading-3.5 font-medium py-6">
                           {company.country}
                         </td>
-                        <td className="text-[10px] leading-3.5 font-medium py-6">
-                          <span
-                            className={`px-1.5 ps-[13px] py-0.5 rounded text-[10px] border leading-3.5 font-medium relative after:absolute after:h-[3px] after:w-[3px] after:rounded-full  after:left-1.5 after:top-[calc(50%-1.5px)] ${
-                              company.status === "Verified"
-                                ? "bg-[#05C16833] text-[#F5F5F3] after:bg-[#05C168] border-[#05C16833]"
-                                : company.status === "Pending"
-                                ? "bg-yellow-500/20 text-[#FDB52A] after:bg-[#FDB52A] border-[#FFB01633]"
-                                : company.status === "Active"
-                                ? "bg-[#00C2FF33] text-[#00C2FF] after:bg-[#00C2FF] border-[#00C2FF33]"
-                                : "bg-red-500/20 text-red-400 after:bg-red-400 border-red-500/20"
-                            }`}
+                        <td className="p-3 py-6">
+                          <select
+                            disabled={company.status === "Verified"}
+                            value={company.status}
+                            onChange={(e) =>
+                              handleStatusChange(company.id, e.target.value)
+                            }
+                            className={`rounded-sm border-0 px-2 py-1 text-xs font-medium ${statusColors[company.status]
+                              }`}
                           >
-                            {company.status}
-                          </span>
+                            <option
+                              value="Pending"
+                              className={statusColors["Pending"]}
+                            >
+                              Pending
+                            </option>
+                            <option
+                              value="Verified"
+                              className={statusColors["Verified"]}
+                            >
+                              Verified
+                            </option>
+                          </select>
                         </td>
                         <td className="text-[10px] leading-3.5 font-medium py-6">
                           {company.contact_email}
