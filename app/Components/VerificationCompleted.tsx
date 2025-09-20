@@ -2,22 +2,21 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import MatrixBarChart from "./MatrixBarChart";
-import ArcCurveChart from "./ArcCurveChart";
-import { formatDate } from "../helper/utils";
 import ScoreSigmoidChart from "./ScoreSigmoidChart";
-import _, { map } from "lodash";
+import { formatDate } from "../helper/utils";
+import { map } from "lodash";
 
 const steps = ["Environment", "Social", "Governance"];
 
 const VerificationCompleted = () => {
   const [step, setStep] = useState(0);
-  // const [mintInfo, setMintInfo] = useState<any>();
   const [userInfo, setUserInfo] = useState<any>({});
   const [budData, setBudData] = useState<any>();
-  console.log(`budData`, budData);
-  console.log(`budData[0]?.timestamp`, budData?.[0]?.timestamp);
+  // selected values for chart
+  const [selectedAvgBud, setSelectedAvgBud] = useState<number | null>(null);
+  const [selectedAvgArc, setSelectedAvgArc] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -27,75 +26,118 @@ const VerificationCompleted = () => {
       }
     }
   }, []);
-  // console.log(`mintInfo`, mintInfo.data);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedBuds: any = localStorage.getItem("buds_id");
-      // const budsIds = map(storedBuds, (token: any) => token.buds_id);
       if (storedBuds) {
         setBudData(JSON.parse(storedBuds));
+      }
+      // also optionally seed chart from quick keys (if present)
+      try {
+        const sBud = localStorage.getItem("avgBud");
+        const sArc = localStorage.getItem("avgArc");
+        if (sBud) setSelectedAvgBud(parseFloat(sBud));
+        if (sArc) setSelectedAvgArc(parseFloat(sArc));
+      } catch (e) {
+        /* ignore localStorage errors */
       }
     }
   }, []);
 
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     const stored = localStorage.getItem("mintResponse");
-  //     if (stored) {
-  //       setMintInfo(JSON.parse(stored));
-  //     }
-  //   }
-  // }, []);
+  // tolerant extractor for a token object — adjust keys if your payload uses others
+  const extractValuesFromToken = (item: any) => {
+    if (!item) return { bud: undefined, arc: undefined };
 
-  // const tokenInfo: any = [
-  //   {
-  //     id: 1,
-  //     src: "/icon/token.png",
-  //     title: "BUDS Token ID",
-  //     value: budData?.length ? budData.join(", ") : "—",
-  //   },
-  //   {
-  //     id: 2,
-  //     src: "/icon/verifier.png",
-  //     title: "Verifier Attribution",
-  //     value: userInfo?.full_name || "—",
-  //   },
-  //   {
-  //     id: 3,
-  //     src: "/icon/timestamp.png",
-  //     title: "Timestamp",
-  //     value: mintInfo?.data?.timestamp
-  //       ? formatDate(mintInfo.data.timestamp)
-  //       : "—",
-  //   },
-  // ];
+    const budKeys = [
+      "buds_score",
+      "BUDS Score",
+      "bud_score",
+      "bud",
+      "avg_bud_score",
+      "avgBudScore",
+      "budsScore",
+    ];
+    const arcKeys = [
+      "arc_position",
+      "Arc Position",
+      "arc",
+      "avg_arc_position",
+      "avgArcPosition",
+      "arcPos",
+    ];
 
-  // const tokenInfo: any = [
-  //   {
-  //     id: 1,
-  //     src: "/icon/token.png",
-  //     title: "BUDS Token ID",
-  //     value: budData?.length ? budData : "—",
-  //   },
-  //   {
-  //     id: 2,
-  //     src: "/icon/verifier.png",
-  //     title: "Verifier Attribution",
-  //     value: userInfo?.full_name || "—",
-  //   },
-  //   {
-  //     id: 3,
-  //     src: "/icon/timestamp.png",
-  //     title: "Timestamp",
-  //     value: mintInfo?.data?.timestamp
-  //       ? formatDate(mintInfo.data.timestamp)
-  //       : "—",
-  //   },
-  // ];
+    const findNumeric = (keys: string[]) => {
+      for (const k of keys) {
+        if (k in item) {
+          const v = parseFloat(item[k]);
+          if (!Number.isNaN(v)) return v;
+        }
+      }
+      return undefined;
+    };
 
-  // if (budData) {
-  //   return <p className="text-center py-8 text-[#D7A992]">Loading...</p>;
-  // }
+    const bud = findNumeric(budKeys);
+    const arc = findNumeric(arcKeys);
+    return { bud, arc };
+  };
+
+  // heuristic normalizer: chart expects arc ~ 0..10 and bud ~ 0..100
+  const normalize = (rawBud?: number, rawArc?: number) => {
+    let budVal: number | undefined = rawBud;
+    let arcVal: number | undefined = rawArc;
+
+    if (budVal !== undefined) {
+      // if source gives 0..1, convert to 0..100
+      if (budVal <= 1) budVal = budVal * 100;
+      // clamp
+      budVal = Math.min(100, Math.max(0, budVal));
+    }
+
+    if (arcVal !== undefined) {
+      // if source gives 0..1, convert to 0..10
+      if (arcVal <= 1) arcVal = arcVal * 10;
+      // clamp
+      arcVal = Math.min(10, Math.max(0, arcVal));
+    }
+
+    return { budVal: budVal ?? null, arcVal: arcVal ?? null };
+  };
+
+  // call when a token row is clicked
+  const handleTokenClick = (item: any) => {
+    const { bud, arc } = extractValuesFromToken(item);
+    const { budVal, arcVal } = normalize(bud, arc);
+
+    // save to state (chart will pick these)
+    setSelectedAvgBud(budVal);
+    setSelectedAvgArc(arcVal);
+
+    // optional: persist for fallback / refresh
+    try {
+      if (budVal != null) localStorage.setItem("avgBud", String(budVal));
+      if (arcVal != null) localStorage.setItem("avgArc", String(arcVal));
+      // keep same shape your existing code expects
+      localStorage.setItem("buds_id", JSON.stringify(Array.isArray(budData) ? budData : [item]));
+    } catch (e) {
+      // ignore localStorage write errors (private mode)
+    }
+  };
+
+  // compute selected highlight id for UI (optional)
+  const selectedId = useMemo(() => {
+    // if budData items have buds_id field, try to find currently selected one
+    if (!budData || !Array.isArray(budData)) return null;
+    return budData.findIndex((it: any) => {
+      const { bud, arc } = extractValuesFromToken(it);
+      const { budVal, arcVal } = normalize(bud, arc);
+      // match by numeric equality (loose) against selected state
+      return (
+        (budVal === selectedAvgBud || (budVal == null && selectedAvgBud == null)) &&
+        (arcVal === selectedAvgArc || (arcVal == null && selectedAvgArc == null))
+      );
+    });
+  }, [budData, selectedAvgBud, selectedAvgArc]);
 
   return (
     <>
@@ -134,11 +176,9 @@ const VerificationCompleted = () => {
                     onClick={() => setStep(i)}
                     className="flex-1 relative py-3.5 px-[30px] transition-colors cursor-pointer"
                   >
-                    {/* Text should always be above the motion.div */}
                     <span
-                      className={`relative z-10 text-2xl leading-[34px] font-normal font_title ${
-                        step === i ? "text-[#F5F5F3]" : "text-[#F5F5F3]"
-                      }`}
+                      className={`relative z-10 text-2xl leading-[34px] font-normal font_title ${step === i ? "text-[#F5F5F3]" : "text-[#F5F5F3]"
+                        }`}
                     >
                       {label}
                     </span>
@@ -155,28 +195,6 @@ const VerificationCompleted = () => {
                 ))}
               </div>
             </div>
-            {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-              {tokenInfo.map((item: any, index: any) => (
-                <div
-                  key={index}
-                  className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]"
-                >
-                  <Image
-                    src={item.src}
-                    alt={item.src}
-                    height={70}
-                    width={70}
-                    className="mb-4"
-                  />
-                  <h4 className="lg:text-[28px] leading-[38px] font-bold mb-2.5 text-nowrap">
-                    {item.title}
-                  </h4>
-                  <p className="text-xl lead[32px] font-normal text-nowrap">
-                    {item.value} <br />
-                  </p>
-                </div>
-              ))}
-            </div> */}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
               <div className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]">
@@ -191,15 +209,31 @@ const VerificationCompleted = () => {
                   BUDS Token ID
                 </h4>
 
-                {/* Always render values as array */}
                 <div className="text-xl leading-[32px] font-normal text-center">
-                  {map(budData, (val, i) => (
-                    <p key={i} className="text-nowrap">
-                      {val.buds_id}
-                    </p>
-                  ))}
+                  {map(budData, (val, i) => {
+                    const isSelected = i === selectedId;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleTokenClick(val)}
+                        className={`w-full text-left py-1 px-2 rounded ${isSelected ? "bg-[#123D2A]" : "bg-transparent"} hover:bg-[#0F2D21]`}
+                        style={{ display: "block" }}
+                      >
+                        <p className="text-nowrap">{val?.buds_id ?? val?.token_id ?? `Token ${i + 1}`}</p>
+                        {/* optionally show small subtitle with bud/arc */}
+                        <small className="text-xs opacity-60">
+                          {(() => {
+                            const { bud, arc } = extractValuesFromToken(val);
+                            const { budVal, arcVal } = normalize(bud, arc);
+                            return `BUDS: ${budVal ?? "—"} | ARC: ${arcVal ?? "—"}`;
+                          })()}
+                        </small>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+
               <div className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]">
                 <Image
                   src={"/icon/verifier.png"}
@@ -212,11 +246,11 @@ const VerificationCompleted = () => {
                   Verifier Attribution
                 </h4>
 
-                {/* Always render values as array */}
                 <div className="text-xl leading-[32px] font-normal text-center">
                   <p className="text-nowrap">{userInfo?.full_name || "—"}</p>
                 </div>
               </div>
+
               <div className="py-5 px-[52px] border border-[#416455] flex flex-col items-center justify-center rounded-[10px]">
                 <Image
                   src={"/icon/timestamp.png"}
@@ -229,21 +263,19 @@ const VerificationCompleted = () => {
                   Timestamp
                 </h4>
 
-                {/* Always render values as array */}
                 <div className="text-xl leading-[32px] font-normal text-center">
                   <p className="text-nowrap">
-                    {budData?.[0]?.timestamp
-                      ? formatDate(budData?.[0]?.timestamp)
-                      : "—"}
+                    {budData?.[0]?.timestamp ? formatDate(budData?.[0]?.timestamp) : "—"}
                   </p>
                 </div>
               </div>
             </div>
           </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[26px] bg-[#0A1912] text-white">
             <MatrixBarChart />
-            {/* <ArcCurveChart arcPosition={mintInfo?.data?.arc_position} /> */}
-            <ScoreSigmoidChart />
+            {/* pass selected values into chart */}
+            <ScoreSigmoidChart avgBudRaw={selectedAvgBud} avgArcRaw={selectedAvgArc} />
           </div>
         </div>
       </motion.div>

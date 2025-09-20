@@ -125,35 +125,48 @@ export interface ApiError {
   status: number;
 }
 
-export interface ScoringRequest {
-  name: string;
-  V: number;
-  M: number;
-  R_factor: number;
-  Sigma: number;
-  Theta: number;
-  L: number;
-  Pi: number;
-  CW: number;
-  c_urgency: number;
-  c_baseline: number;
-  c_u: number;
-  u: number;
-  gamma: number[];
-  r: number[];
-  w_d: number;
-  P: number[][];
-  theta: number[][];
-  A: number[][];
-  B: number[][];
-  C: number[][];
-  C_tier: number;
-  k: number;
-  S0: number;
-  tau: number;
-  T: number;
-  X_level: number;
-}
+// export interface ScoringRequest {
+//   name: string;
+//   V: number;
+//   M: number;
+//   R_factor: number;
+//   Sigma: number;
+//   Theta: number;
+//   L: number;
+//   Pi: number;
+//   CW: number;
+//   c_urgency: number;
+//   c_baseline: number;
+//   c_u: number;
+//   u: number;
+//   gamma: number[];
+//   r: number[];
+//   w_d: number;
+//   P: number[][];
+//   theta: number[][];
+//   A: number[][];
+//   B: number[][];
+//   C: number[][];
+//   C_tier: number;
+//   k: number;
+//   S0: number;
+//   tau: number;
+//   T: number;
+//   X_level: number;
+// }
+
+export type ScoringRequest = {
+  company_id: string;
+  template_id: string;
+  raw_value: number;
+  unit: string;
+  period_start: string;
+  period_end: string;
+  document_id: string;
+  submitted_by: string;
+  status: "pending" | "approved" | "rejected" | string;
+}[];
+
 
 export interface ScoringResponse {
   name?: string;
@@ -177,4 +190,30 @@ export type CompanyVerificationCount = {
 
 export interface LastVerification {
   last_verification: string | null;
+}
+
+export type FieldsBatchRequest = {
+  company_id: string;
+  template_id: string;
+  raw_value: number;
+  unit: string;
+  period_start: string;
+  period_end: string;
+  document_id: string;
+  submitted_by: string;
+  status: "pending" | "approved" | "rejected" | string;
+}[];
+
+export  interface FieldsBatchResponse {
+  submissions?: Array<Record<string, any>>;
+  tokens?: Array<Record<string, any>>;
+  avg_bud_score?: number;      // e.g. 17.33
+  avg_arc_position?: number;   // e.g. 6.09
+}
+
+export interface ScoreSigmoidChartProps {
+  scoringData?: Partial<ScoringRequest> & { batchFields?: FieldsBatchRequest };
+  title?: string;
+  height?: number;
+  centerOverride?: number;
 }
