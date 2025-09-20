@@ -63,6 +63,8 @@ const TokenList = (props: IProps) => {
   }, [companyId]);
 
   const handleShowVerification = (company: any) => {
+    localStorage.setItem("avgBud", company.bud_score)
+    localStorage.setItem("avgArc", company.arc_position)
     setSelectedToken(company);
   };
 
@@ -204,13 +206,13 @@ const TokenList = (props: IProps) => {
                   </td>
                 </tr>
               ) : (
-                tokenData.map((company: any, i: any) => (
+                tokenData.map((company: any, i: number) => (
                   <motion.tr
-                    key={company.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="py-6 table_row_bg"
+                    key={company.id || company.buds_id || i}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
                     <td onClick={() => handleShowVerification(company)}
                       className="text-[10px] leading-3.5 font-medium py-6 ps-[27px] flex items-center gap-2 text-[#D99A70] hover:text-orange-400 cursor-pointer"

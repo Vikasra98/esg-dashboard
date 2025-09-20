@@ -107,7 +107,9 @@ export default function DataInputFlowForm() {
 
       console.log("Submitting payload:", payload);
 
-      await submitFieldData(payload); // send array instead of single object
+      const res = await submitFieldData(payload);
+      localStorage.setItem("avgBud", res.avg_bud_score)
+      localStorage.setItem("avgArc", res.avg_arc_position)
       setIsLoading(false);
       setIsCompleted(true);
     } catch (err) {
@@ -150,9 +152,8 @@ export default function DataInputFlowForm() {
               >
                 {/* Text should always be above the motion.div */}
                 <span
-                  className={`relative z-10 text-2xl leading-[34px] font-normal font_title ${
-                    step === i ? "text-white" : "text-[#12291E]"
-                  }`}
+                  className={`relative z-10 text-2xl leading-[34px] font-normal font_title ${step === i ? "text-white" : "text-[#12291E]"
+                    }`}
                 >
                   {label}
                 </span>
@@ -555,11 +556,10 @@ export default function DataInputFlowForm() {
               Cancel
             </button>
             <button
-              className={`px-6 py-2 lg:py-[18px] lg:px-[80px] rounded-lg h-auto text-2xl leading-[34px] cursor-pointer font-semibold ${
-                isLoading
+              className={`px-6 py-2 lg:py-[18px] lg:px-[80px] rounded-lg h-auto text-2xl leading-[34px] cursor-pointer font-semibold ${isLoading
                   ? "bg-gray-400 text-gray-200 cursor-not-allowed"
                   : "bg-[#12291E] text-[#F5F5F3] hover:bg-green-800"
-              }`}
+                }`}
               onClick={handleSave}
               disabled={isLoading}
             >

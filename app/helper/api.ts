@@ -531,7 +531,7 @@ export const scoringApi = {
   // Calculate scoring
   calculate: async (scoringData: ScoringRequest): Promise<ScoringResponse> => {
     try {
-      const response = await api.post("/v1/scoring/calculate", scoringData);
+      const response = await api.post("/v1/fields/batch", scoringData);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = {
