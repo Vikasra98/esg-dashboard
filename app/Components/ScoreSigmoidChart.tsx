@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -16,7 +16,13 @@ import { ScoreSigmoidChartProps } from "../types/api";
 
 const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 
-const buildSigmoidData = (center: number, start = 0, end = 10, step = 0.05, steepness = 2) => {
+const buildSigmoidData = (
+  center: number,
+  start = 0,
+  end = 10,
+  step = 0.05,
+  steepness = 2
+) => {
   const arr: { x: number; y: number }[] = [];
   for (let x = start; x <= end + 1e-9; x = +(x + step).toFixed(12)) {
     const input = (x - center) * steepness;
@@ -26,7 +32,6 @@ const buildSigmoidData = (center: number, start = 0, end = 10, step = 0.05, stee
 };
 
 type Props = ScoreSigmoidChartProps & {
-  /** Optional explicit values from parent. Prefer passing these. */
   avgBudRaw?: number | null;
   avgArcRaw?: number | null;
 };
@@ -38,39 +43,53 @@ export default function ScoreSigmoidChart({
   avgBudRaw: propAvgBud,
   avgArcRaw: propAvgArc,
 }: Props) {
-  // Local fallback values read once (client-side)
-  const [localFallback, setLocalFallback] = useState<{ avgBud?: number; avgArc?: number }>({});
-  console.log("🚀 ~ ScoreSigmoidChart ~ localFallback:", localFallback)
+  const [localFallback, setLocalFallback] = useState<{
+    avgBud?: number;
+    avgArc?: number;
+  }>({});
+  const [forceRender, setForceRender] = useState(0); // state to force refresh
+  const refreshBtnRef = useRef<HTMLButtonElement>(null);
 
+  // read localStorage once
   useEffect(() => {
-    // read localStorage only on client once
-    try {
-      const b = localStorage.getItem("avgBud");
-      const a = localStorage.getItem("avgArc");
-      setLocalFallback({
-        avgBud: b != null && b !== "" ? parseFloat(b) : undefined,
-        avgArc: a != null && a !== "" ? parseFloat(a) : undefined,
-      });
-    } catch (e) {
-      // ignore localStorage read errors (e.g., privacy modes)
-      setLocalFallback({});
+    if (typeof window !== "undefined") {
+      try {
+        const b = localStorage.getItem("avgBud");
+        const a = localStorage.getItem("avgArc");
+        setLocalFallback({
+          avgBud: b != null && b !== "" ? parseFloat(b) : undefined,
+          avgArc: a != null && a !== "" ? parseFloat(a) : undefined,
+        });
+      } catch (e) {
+        setLocalFallback({});
+      }
+    }
+  }, []);
+
+  // automatically click the hidden refresh button after page load
+  useEffect(() => {
+    if (refreshBtnRef.current) {
+      refreshBtnRef.current.click();
     }
   }, []);
 
   const clamp = (v: number | undefined | null, min = 0, max = 100) =>
-    v == null || Number.isNaN(Number(v)) ? undefined : Math.min(max, Math.max(min, Number(v)));
+    v == null || Number.isNaN(Number(v))
+      ? undefined
+      : Math.min(max, Math.max(min, Number(v)));
 
-  // Choose source: prop -> localStorage fallback -> null
   const avgBud = propAvgBud ?? localFallback.avgBud ?? null;
   const avgArc = propAvgArc ?? localFallback.avgArc ?? null;
 
-  const dotX = typeof avgArc === "number" ? Math.min(10, Math.max(0, avgArc)) : undefined;
+  const dotX =
+    typeof avgArc === "number" ? Math.max(0.1, Math.min(10, avgArc)) : 0.1; // force min 0.1
   const dotY = clamp(avgBud, 0, 100);
 
   const steepness = 2;
 
   const computedCenter = (() => {
-    if (typeof centerOverride === "number" && !Number.isNaN(centerOverride)) return Math.min(10, Math.max(0, centerOverride));
+    if (typeof centerOverride === "number" && !Number.isNaN(centerOverride))
+      return Math.min(10, Math.max(0, centerOverride));
     if (typeof dotX === "number" && typeof dotY === "number") {
       const eps = 1e-6;
       let y = dotY;
@@ -84,21 +103,38 @@ export default function ScoreSigmoidChart({
     return 3.75;
   })();
 
-  const data = useMemo(() => buildSigmoidData(computedCenter, 0, 10, 0.05, steepness).sort((a, b) => a.x - b.x), [computedCenter]);
+  // rebuild data when computedCenter or forceRender changes
+  const data = useMemo(
+    () =>
+      buildSigmoidData(computedCenter, 0, 10, 0.05, steepness).sort(
+        (a, b) => a.x - b.x
+      ),
+    [computedCenter, forceRender]
+  );
 
-  const finalDotX = typeof dotX === "number" ? dotX : 0;
-  const finalDotY = typeof dotY === "number" ? dotY : +(sigmoid((finalDotX - computedCenter) * steepness) * 100).toFixed(3);
+  const finalDotX = dotX;
+  const finalDotY =
+    typeof dotY === "number"
+      ? dotY
+      : +(sigmoid((finalDotX - computedCenter) * steepness) * 100).toFixed(3);
 
-  // Debug logs (remove in production)
-  console.log("propAvgArc (used as x 0..10) =", propAvgArc, " avgArc fallback =", avgArc, " plotted finalDotX =", finalDotX);
-  console.log("propAvgBud (y 0..100) =", propAvgBud, " avgBud fallback =", avgBud, " plotted finalDotY =", finalDotY);
-  console.log("computedCenter (0..10) =", computedCenter);
-
+  // hidden refresh button triggers chart recalculation
   return (
     <div className="rounded-2xl p-1.5 shadow-lg border border-[#416455] px-6 pt-[135px]">
+      <button
+        ref={refreshBtnRef}
+        onClick={() => setForceRender((prev) => prev + 1)}
+        className="hidden"
+      >
+        Refresh
+      </button>
+
       <div style={{ width: "100%", height }}>
         <ResponsiveContainer width="100%" height={330}>
-          <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
+          <LineChart
+            data={data}
+            margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+          >
             <CartesianGrid stroke="#444" strokeDasharray="3 3" />
             <XAxis
               dataKey="x"
@@ -108,7 +144,12 @@ export default function ScoreSigmoidChart({
               allowDataOverflow={false}
               scale="linear"
               stroke="#B5B5B5"
-              label={{ value: "Compound matrix value", position: "insideBottom", dy: 25, fill: "#B5B5B5" }}
+              label={{
+                value: "Compound matrix value",
+                position: "insideBottom",
+                dy: 25,
+                fill: "#B5B5B5",
+              }}
             />
             <YAxis
               dataKey="y"
@@ -116,16 +157,51 @@ export default function ScoreSigmoidChart({
               ticks={[0, 20, 40, 60, 80, 100]}
               allowDataOverflow={false}
               stroke="#B5B5B5"
-              label={{ value: "BUDS", angle: -90, position: "insideLeft", fill: "#B5B5B5" }}
+              label={{
+                value: "BUDS",
+                angle: -90,
+                position: "insideLeft",
+                fill: "#B5B5B5",
+              }}
             />
-            <Tooltip contentStyle={{ backgroundColor: "#0D2017", borderRadius: 8, border: "1px solid #333", color: "#fff", }} cursor={false} formatter={(value: any) => typeof value === "number" ? +value.toFixed(2) : value}
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#0D2017",
+                borderRadius: 8,
+                border: "1px solid #333",
+                color: "#fff",
+              }}
+              cursor={false}
+              formatter={(value: any) =>
+                typeof value === "number" ? +value.toFixed(2) : value
+              }
             />
-            <ReferenceLine x={finalDotX} stroke="#FFD700" strokeDasharray="2 6" label={{ position: "bottom", fill: "#FFD700", fontSize: 11 }} />
-            <Line type="monotone" dataKey="y" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={false} isAnimationActive={false} />
-            <ReferenceDot x={finalDotX} y={finalDotY} r={6} stroke="#fff" fill="#EF4444" />
+            <ReferenceLine
+              x={finalDotX}
+              stroke="#FFD700"
+              strokeDasharray="2 6"
+              label={{ position: "bottom", fill: "#FFD700", fontSize: 11 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="y"
+              stroke="#EF4444"
+              strokeWidth={2}
+              dot={false}
+              activeDot={false}
+              isAnimationActive={false}
+            />
+            <ReferenceDot
+              x={finalDotX}
+              y={finalDotY}
+              r={6}
+              stroke="#fff"
+              fill="#EF4444"
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
+
       <div className="text-center">
         <h2 className="text-white text-3xl font-semibold">{title}</h2>
       </div>
